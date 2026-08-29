@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Tạo & Thẩm Định Bộ Chứng Từ Ngoại Thương (TradeDoc Pro)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            light: '#e0f2fe',
+                            DEFAULT: '#0284c7',
+                            dark: '#0369a1'
+                        },
+                        warn: {
+                            light: '#fef9c3',
+                            DEFAULT: '#eab308'
+                        },
+                        danger: {
+                            light: '#fee2e2',
+                            DEFAULT: '#dc2626'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .active-tab {
+            border-bottom: 3px solid #0284c7;
+            color: #0284c7;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-brand text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-file-contract text-2xl text-warn-light"></i>
+                <h1 class="text-xl font-bold tracking-wide">HỆ THỐNG TẠO BỘ CHỨNG TỪ NGOẠI THƯƠNG</h1>
+            </div>
+            <span class="text-xs bg-brand-dark px-3 py-1 rounded-full border border-blue-300">Dành cho Đào tạo & Thực hành XNK</span>
+        </div>
+    </header>
+
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 flex gap-8">
+            <button onclick="switchTab('gen')" id="tab-gen" class="py-4 px-2 active-tab flex items-center gap-2 hover:text-brand transition">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Module 1: Sinh Chứng Từ (Generator)
+            </button>
+            <button onclick="switchTab('info')" id="tab-info" class="py-4 px-2 text-slate-500 flex items-center gap-2 hover:text-brand transition">
+                <i class="fa-solid fa-id-card"></i> Thông Tin Chung (Sinh Viên)
+            </button>
+        </div>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
+
+        <section id="module-generator" class="space-y-6">
+            <div class="bg-brand-light border-l-4 border-brand p-4 rounded-r shadow-sm">
+                <p class="text-sm text-brand-dark">
+                    <i class="fa-solid fa-circle-info mr-1"></i>
+                    <strong>Hướng dẫn:</strong> Sinh viên nhập thông tin lô hàng vào <strong>Master Entry Panel</strong> dưới đây. Các ô nhập liệu được mở rộng tối đa để quan sát toàn bộ văn bản. Hệ thống sẽ tự động nhân bản và điền chính xác vào toàn bộ chứng từ tiêu chuẩn xuất khẩu.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                <h2 class="text-lg font-bold text-slate-700 mb-4 pb-2 border-b flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-brand"></i> Master Entry Panel (Dữ liệu gốc Lô hàng)
+                </h2>
+
+                <form id="master-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div class="flex flex-col">
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Số Hợp Đồng / LC</label>
+                        <textarea id="m-contract" rows="2" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">IMP-2026-EXP-08</textarea>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Người Xuất Khẩu (Exporter)</label>
+                        <textarea id="m-exporter" rows="3" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">VIETNAM AGRI-EXPORT CO., LTD
+123 NGUYEN HUE STREET, DISTRICT 1, HO CHI MINH CITY, VIETNAM</textarea>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Người Nhập Khẩu (Importer)</label>
+                        <textarea id="m-importer" rows="3" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">GLOBAL FOODS IMPORTS INC
+456 PACIFIC AVENUE, LOS ANGELES, CA 90001, USA</textarea>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Mô tả Hàng hóa</label>
+                        <textarea id="m-commodity" rows="3" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">VIETNAMESE ROBUSTA COFFEE BEANS GRADE 1, SCREEN 18, MAXIMUM 2% BROKEN, MOISTURE 12.5% MAX</textarea>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Mã HS Code</label>
+                        <textarea id="m-hscode" rows="2" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">0901.11.10</textarea>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Điều khoản Incoterms (Nhập tự do)</label>
+                        <textarea id="m-incoterm" rows="2" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">CIF Los Angeles Port, USA (Incoterms 2020)</textarea>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Trọng lượng Gross (KGS)</label>
+                        <input type="number" id="m-gw" value="19200" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Trọng lượng Net (KGS)</label>
+                        <input type="number" id="m-nw" value="18000" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Số lượng & Đóng gói</label>
+                        <textarea id="m-qty" rows="2" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">300 BAGS (60 KGS NET PER JUTE BAG)</textarea>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Tổng Trị Giá ($ USD)</label>
+                        <input type="number" id="m-amount" value="45000" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cảng Đi (POL)</label>
+                        <textarea id="m-pol" rows="2" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">CAT LAI PORT, HO CHI MINH CITY, VIETNAM</textarea>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cảng Đến (POD)</label>
+                        <textarea id="m-pod" rows="2" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">LOS ANGELES PORT, CALIFORNIA, USA</textarea>
+                    </div>
+                </form>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                <h3 class="font-bold text-slate-700 mb-4">Danh Mục Xuất File PDF Tự Động:</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button onclick="openContractModal()" class="p-3 bg-brand-light hover:bg-sky-200 border border-brand/30 rounded-lg flex items-center gap-2 text-sm font-semibold text-brand-dark transition shadow-sm">
+                        <i class="fa-solid fa-file-signature text-brand text-lg"></i> Hợp Đồng Ngoại Thương
+                    </button>
+                    <button onclick="openInvoiceModal()" class="p-3 bg-brand-light hover:bg-sky-200 border border-brand/30 rounded-lg flex items-center gap-2 text-sm font-semibold text-brand-dark transition shadow-sm">
+                        <i class="fa-solid fa-file-invoice-dollar text-brand text-lg"></i> Commercial Invoice
+                    </button>
+                    <button onclick="openPackingListModal()" class="p-3 bg-brand-light hover:bg-sky-200 border border-brand/30 rounded-lg flex items-center gap-2 text-sm font-semibold text-brand-dark transition shadow-sm">
+                        <i class="fa-solid fa-boxes-packing text-brand text-lg"></i> Detailed Packing List
+                    </button>
+                    <button onclick="openBookingModal()" class="p-3 bg-brand-light hover:bg-sky-200 border border-brand/30 rounded-lg flex items-center gap-2 text-sm font-semibold text-brand-dark transition shadow-sm">
+                        <i class="fa-solid fa-ship text-brand text-lg"></i> Booking Note
+                    </button>
+                    <button onclick="openBLModal()" class="p-3 bg-brand-light hover:bg-sky-200 border border-brand/30 rounded-lg flex items-center gap-2 text-sm font-semibold text-brand-dark transition shadow-sm">
+                        <i class="fa-solid fa-file-contract text-brand text-lg"></i> Bill of Lading
+                    </button>
+                    <button onclick="openCOModal()" class="p-3 bg-brand-light hover:bg-sky-200 border border-brand/30 rounded-lg flex items-center gap-2 text-sm font-semibold text-brand-dark transition shadow-sm">
+                        <i class="fa-solid fa-certificate text-brand text-lg"></i> Certificate of Origin
+                    </button>
+                    <button onclick="openInsuranceModal()" class="p-3 bg-brand-light hover:bg-sky-200 border border-brand/30 rounded-lg flex items-center gap-2 text-sm font-semibold text-brand-dark transition shadow-sm">
+                        <i class="fa-solid fa-shield-halved text-brand text-lg"></i> Insurance Certificate
+                    </button>
+                    <button onclick="generateAllPDFs()" class="col-span-1 md:col-span-1 p-3 bg-brand text-white font-bold rounded-lg shadow hover:bg-brand-dark transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-pdf"></i> TẢI TRỌN BỘ CHỨNG TỪ (PDF)
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="module-info" class="space-y-6 hidden">
+            <div class="bg-brand-light border-l-4 border-brand p-4 rounded-r shadow-sm">
+                <p class="text-sm text-brand-dark">
+                    <i class="fa-solid fa-user-graduate mr-1"></i>
+                    <strong>Khai báo thông tin cá nhân:</strong> Vui lòng nhập đầy đủ Họ và tên, Mã số sinh viên. Thông tin này sẽ tự động hiển thị ở đầu trang (Header) của từng file PDF chứng từ khi xuất file để Giáo viên tiến hành chấm bài.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200 max-w-2xl mx-auto space-y-5">
+                <h2 class="text-lg font-bold text-slate-700 mb-4 pb-2 border-b flex items-center gap-2">
+                    <i class="fa-solid fa-id-card text-brand"></i> Thông Tin Sinh Viên Thực Hiện Bài Tập
+                </h2>
+
+                <div class="flex flex-col space-y-2">
+                    <label class="block text-xs font-bold uppercase text-slate-600">Họ và Tên Sinh Viên</label>
+                    <input type="text" id="student-name" placeholder="Ví dụ: Nguyễn Văn A" class="w-full p-3 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition">
+                </div>
+
+                <div class="flex flex-col space-y-2">
+                    <label class="block text-xs font-bold uppercase text-slate-600">Mã Số Sinh Viên (MSSV)</label>
+                    <input type="text" id="student-id" placeholder="Ví dụ: 22001234" class="w-full p-3 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition">
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg text-xs text-amber-800 space-y-1">
+                    <p class="font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Lưu ý dành cho Sinh viên:</p>
+                    <p>- Header hiển thị dạng: <strong>[ SINH VIÊN: HỌ VÀ TÊN - MSSV: ... ]</strong> ở phía trên cùng mỗi trang PDF.</p>
+                    <p>- Kiểm tra chính xác MSSV trước khi xuất toàn bộ file PDF để phục vụ cho việc chấm bài của Giáo viên.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-300 text-xs py-4 border-t border-slate-700 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-2 text-center md:text-left">
+            <div>
+                <p class="font-semibold text-slate-200">
+                    <i class="fa-regular fa-copyright mr-1"></i> Phần mềm do <span class="text-sky-400 font-bold">GV Nguyễn Khánh Dương</span> phát triển.
+                </p>
+                <p class="text-slate-400 text-[11px] mt-0.5">
+                    Phần mềm dùng cho giảng dạy và học tập.
+                </p>
+            </div>
+            <div class="flex items-center gap-2">
+                <i class="fa-regular fa-envelope text-slate-400"></i>
+                <span>Mail:</span>
+                <a href="mailto:nguyenkhanhduong0111@gmail.com" class="text-sky-400 hover:underline font-medium">nguyenkhanhduong0111@gmail.com</a>
+            </div>
+        </div>
+    </footer>
+
+    <div id="contract-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-brand text-white p-4 flex justify-between items-center">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-file-signature"></i> Xem & Tùy Chỉnh Hợp Đồng Ngoại Thương (Sales Contract)
+                </h3>
+                <button onclick="closeContractModal()" class="text-white/80 hover:text-white text-xl font-bold">&times;</button>
+            </div>
+            <div class="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-3 rounded border border-slate-200">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Số Hợp Đồng (Contract No.)</label>
+                        <input type="text" id="sc-contract-no" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Ngày Ký (Date)</label>
+                        <input type="text" id="sc-date" value="15/08/2026" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Địa Điểm Ký (Place of Issue)</label>
+                        <input type="text" id="sc-place" value="Ho Chi Minh City, Vietnam" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">BÊN BÁN (THE SELLER - PARTY A)</label>
+                        <textarea id="sc-seller" rows="3" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">BÊN MUA (THE BUYER - PARTY B)</label>
+                        <textarea id="sc-buyer" rows="3" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none"></textarea>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <h4 class="font-bold text-slate-700 text-xs uppercase border-b pb-1">Các Điều Khoản Hợp Đồng (Terms & Conditions)</h4>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 1: Tên hàng & Quy cách (Commodity & Specification)</label>
+                        <textarea id="sc-commodity" rows="2" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none"></textarea>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 2: Số lượng (Quantity)</label>
+                            <input type="text" id="sc-quantity" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 3: Đơn giá (Unit Price)</label>
+                            <input type="text" id="sc-unit-price" value="USD 150.00 / Bag" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 4: Tổng trị giá (Total Amount)</label>
+                            <input type="text" id="sc-total-amount" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 5: Đóng gói & Bao bì (Packing & Marking)</label>
+                            <textarea id="sc-packing" rows="2" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">Packed in new single jute bags of 60 KGS net each. Shipping marks: GLOBAL FOODS USA / PORT OF LOS ANGELES / MADE IN VIETNAM.</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 6: Giao hàng (Shipment & Delivery)</label>
+                            <textarea id="sc-shipment" rows="2" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">Time of Shipment: Latest August 2026. Port of Loading: Cat Lai Port, Vietnam. Port of Discharge: Los Angeles Port, USA. Partial shipment: Allowed. Transhipment: Not allowed.</textarea>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 7: Thanh toán (Payment Terms)</label>
+                        <textarea id="sc-payment" rows="2" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">By Irrevocable Letter of Credit (L/C) at sight for 100% of total contract value in favor of the Seller, issued by a first-class international bank.</textarea>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 8: Bảo hiểm (Insurance)</label>
+                            <textarea id="sc-insurance" rows="2" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">To be covered by the Seller covering All Risks (ICC A) for 110% of CIF Invoice value.</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 9: Trọng tài & Pháp lý (Arbitration & Governing Law)</label>
+                            <textarea id="sc-arbitration" rows="2" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">Any dispute arising out of or in connection with this contract shall be settled by the Vietnam International Arbitration Centre (VIAC) under its UNCITRAL Rules.</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-100 p-4 border-t flex justify-end gap-3">
+                <button onclick="closeContractModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded text-sm font-semibold transition">Hủy</button>
+                <button onclick="generateCustomContractPDF()" class="px-5 py-2 bg-brand text-white font-bold rounded hover:bg-brand-dark transition text-sm flex items-center gap-2 shadow">
+                    <i class="fa-solid fa-file-pdf"></i> Xuất Hợp Đồng Ngoại Thương (PDF)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="invoice-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-brand text-white p-4 flex justify-between items-center">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-file-invoice-dollar"></i> Xem & Tùy Chỉnh Commercial Invoice
+                </h3>
+                <button onclick="closeInvoiceModal()" class="text-white/80 hover:text-white text-xl font-bold">&times;</button>
+            </div>
+            <div class="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
+                <div class="bg-slate-50 p-3 rounded border text-xs text-slate-600 space-y-1">
+                    <p><strong>Số hợp đồng/LC:</strong> <span id="inv-preview-contract">---</span></p>
+                    <p><strong>Người xuất khẩu:</strong> <span id="inv-preview-exporter">---</span></p>
+                    <p><strong>Người nhập khẩu:</strong> <span id="inv-preview-importer">---</span></p>
+                    <p><strong>Mặt hàng:</strong> <span id="inv-preview-commodity">---</span> | <strong>Trị giá:</strong> $<span id="inv-preview-amount">---</span></p>
+                </div>
+                <hr>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">
+                        <i class="fa-solid fa-pen-nib text-brand"></i> Điều Khoản Thanh Toán & Bổ Sung
+                    </label>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">1. Điều khoản Thanh toán</label>
+                            <input type="text" id="inv-payment-terms" value="By Irrevocable L/C at sight, 100% invoice value." class="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-brand outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">2. Thông tin Ngân hàng</label>
+                            <input type="text" id="inv-bank-details" value="Vietcombank Ho Chi Minh Branch, SWIFT: BFTVVNVX" class="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-brand outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">3. Ghi chú & Điều khoản bổ sung khác</label>
+                            <textarea id="inv-extra-terms" rows="3" class="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-brand outline-none">Goods to be packed in new single jute bags of 60 KGS net each.</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-100 p-4 border-t flex justify-end gap-3">
+                <button onclick="closeInvoiceModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded text-sm font-semibold transition">Hủy</button>
+                <button onclick="generateCustomInvoicePDF()" class="px-5 py-2 bg-brand text-white font-bold rounded hover:bg-brand-dark transition text-sm flex items-center gap-2 shadow">
+                    <i class="fa-solid fa-file-pdf"></i> Xuất Commercial Invoice (PDF)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="packing-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-brand text-white p-4 flex justify-between items-center">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-boxes-packing"></i> Tùy Chỉnh Chi Tiết Đóng Gói (Detailed Packing List)
+                </h3>
+                <button onclick="closePackingListModal()" class="text-white/80 hover:text-white text-xl font-bold">&times;</button>
+            </div>
+            <div class="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50 p-3 rounded border text-xs text-slate-600">
+                    <p><strong>Số hợp đồng:</strong> <span id="pl-preview-contract">---</span></p>
+                    <p><strong>Phương thức VC:</strong> <span id="pl-preview-route">---</span></p>
+                    <p><strong>Người xuất khẩu:</strong> <span id="pl-preview-exporter">---</span></p>
+                    <p><strong>Người nhập khẩu:</strong> <span id="pl-preview-importer">---</span></p>
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="font-bold text-slate-700 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-brand"></i> Bảng Quy Cách Đóng Gói Chi Tiết Lô Hàng
+                        </label>
+                        <button onclick="addPackingRow()" class="px-3 py-1 bg-green-600 text-white rounded text-xs font-bold hover:bg-green-700 transition flex items-center gap-1">
+                            <i class="fa-solid fa-plus"></i> Thêm Dòng
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto border border-slate-200 rounded">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead class="bg-slate-100 font-semibold text-slate-700 uppercase border-b">
+                                <tr>
+                                    <th class="p-2 border-r w-28">Số Cont / Seal</th>
+                                    <th class="p-2 border-r">Mô tả Kiện/Hàng hoá</th>
+                                    <th class="p-2 border-r w-20 text-center">Số Kiện</th>
+                                    <th class="p-2 border-r w-24 text-center">N.W (KGS)</th>
+                                    <th class="p-2 border-r w-24 text-center">G.W (KGS)</th>
+                                    <th class="p-2 border-r w-20 text-center">CBM (m³)</th>
+                                    <th class="p-2 text-center w-12">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pl-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Ghi chú phương thức đóng gói / Ký mã hiệu (Shipping Marks)</label>
+                    <textarea id="pl-shipping-marks" rows="2" class="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-brand outline-none">MARKS & NUMBERS:
+GLOBAL FOODS USA
+PORT OF LOS ANGELES
+MADE IN VIETNAM
+NOS: 1 - 300</textarea>
+                </div>
+            </div>
+            <div class="bg-slate-100 p-4 border-t flex justify-end gap-3">
+                <button onclick="closePackingListModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded text-sm font-semibold transition">Hủy</button>
+                <button onclick="generateCustomPackingListPDF()" class="px-5 py-2 bg-brand text-white font-bold rounded hover:bg-brand-dark transition text-sm flex items-center gap-2 shadow">
+                    <i class="fa-solid fa-file-pdf"></i> Xuất Detailed Packing List (PDF)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="booking-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-brand text-white p-4 flex justify-between items-center">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-ship"></i> Xem & Tùy Chỉnh Lệnh Đặt Chỗ (Booking Note)
+                </h3>
+                <button onclick="closeBookingModal()" class="text-white/80 hover:text-white text-xl font-bold">&times;</button>
+            </div>
+            <div class="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-3 rounded border border-slate-200">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Mã Booking (Booking No.)</label>
+                        <input type="text" id="bn-booking-no" value="BK-2026-MAERSK-089" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Hãng Tàu (Shipping Line)</label>
+                        <input type="text" id="bn-carrier" value="MAERSK LINE" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tên Tàu / Số Chuyến (Vessel/Voy)</label>
+                        <input type="text" id="bn-vessel" value="MAERSK MC-KINNEY / V.2608E" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Thời Gian Hàng Cần Đến Cảng (SI Cut-off)</label>
+                        <input type="text" id="bn-si-cutoff" value="17:00 25/08/2026" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Thời Gian Đóng Cửa Cảng (CY Cut-off)</label>
+                        <input type="text" id="bn-cy-cutoff" value="12:00 26/08/2026" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Ngày Khởi Hành Dự Kiến (ETD)</label>
+                        <input type="text" id="bn-etd" value="28/08/2026" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Địa Điểm Lấy Rỗng (Empty Pickup)</label>
+                        <input type="text" id="bn-empty-depot" value="Tan Cang / ICD Transimex" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Nơi Hạ Bãi Hàng (Full Return Yard)</label>
+                        <input type="text" id="bn-return-yard" value="Cat Lai Terminal 1" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Cước Phí & Thanh Toán (Freight)</label>
+                        <select id="bn-freight-term" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                            <option value="FREIGHT PREPAID">FREIGHT PREPAID (Trả trước)</option>
+                            <option value="FREIGHT COLLECT">FREIGHT COLLECT (Trả sau)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="font-bold text-slate-700 flex items-center gap-2">
+                            <i class="fa-solid fa-cubes text-brand"></i> Bảng Đăng Ký Loại Container & Thiết Bị (Equipment Details)
+                        </label>
+                        <button onclick="addBookingRow()" class="px-3 py-1 bg-green-600 text-white rounded text-xs font-bold hover:bg-green-700 transition flex items-center gap-1">
+                            <i class="fa-solid fa-plus"></i> Thêm Loại Cont
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto border border-slate-200 rounded">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead class="bg-slate-100 font-semibold text-slate-700 uppercase border-b">
+                                <tr>
+                                    <th class="p-2 border-r">Loại Container (Type)</th>
+                                    <th class="p-2 border-r w-24 text-center">Số Lượng (Qty)</th>
+                                    <th class="p-2 border-r">Yêu Cầu Nhiệt Độ / Thông Gió</th>
+                                    <th class="p-2 border-r w-28 text-center">G.W Dự Kiến (KGS)</th>
+                                    <th class="p-2 text-center w-12">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bn-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Chỉ Dẫn Đặc Biệt Của Hãng Tàu / Chủ Hàng (Special Instructions)</label>
+                    <textarea id="bn-special-instructions" rows="2" class="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-brand outline-none">- VGM & SI Cut-off must be strictly submitted before deadline.
+- Food grade containers required.
+- Free time target at POD: 14 days demurrage/detention.</textarea>
+                </div>
+            </div>
+            <div class="bg-slate-100 p-4 border-t flex justify-end gap-3">
+                <button onclick="closeBookingModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded text-sm font-semibold transition">Hủy</button>
+                <button onclick="generateCustomBookingPDF()" class="px-5 py-2 bg-brand text-white font-bold rounded hover:bg-brand-dark transition text-sm flex items-center gap-2 shadow">
+                    <i class="fa-solid fa-file-pdf"></i> Xuất Booking Note (PDF)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="bl-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-brand text-white p-4 flex justify-between items-center">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-file-contract"></i> Tùy Chỉnh Vận Đơn Đường Biển (Bill of Lading - B/L)
+                </h3>
+                <button onclick="closeBLModal()" class="text-white/80 hover:text-white text-xl font-bold">&times;</button>
+            </div>
+            <div class="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-3 rounded border border-slate-200">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Số Vận Đơn (B/L No.)</label>
+                        <input type="text" id="bl-number" value="MAEU90823100" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Loại Vận Đơn (B/L Type)</label>
+                        <select id="bl-type" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                            <option value="OCEAN BILL OF LADING">OCEAN BILL OF LADING (Gốc)</option>
+                            <option value="SURRENDERED BILL OF LADING">SURRENDERED B/L</option>
+                            <option value="SEA WAYBILL">SEA WAYBILL</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tên Tàu & Chuyến (Vessel / Voy)</label>
+                        <input type="text" id="bl-vessel" value="MAERSK MC-KINNEY / V.2608E" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">1. Người Gửi Hàng (Shipper)</label>
+                        <textarea id="bl-shipper" rows="3" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">2. Người Nhận Hàng (Consignee)</label>
+                        <textarea id="bl-consignee" rows="3" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">TO THE ORDER OF GLOBAL FOODS IMPORTS INC</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">3. Bên Được Thông Báo (Notify Party)</label>
+                        <textarea id="bl-notify" rows="3" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none"></textarea>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50 p-3 rounded border border-slate-200">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Số Lượng Bản Vận Đơn Gốc (No. of Original B/Ls)</label>
+                        <input type="text" id="bl-originals" value="THREE (3)" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Thanh Toán Cước Phí (Freight & Charges)</label>
+                        <input type="text" id="bl-freight-payable" value="FREIGHT PREPAID AT HO CHI MINH CITY" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-100 p-4 border-t flex justify-end gap-3">
+                <button onclick="closeBLModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded text-sm font-semibold transition">Hủy</button>
+                <button onclick="generateCustomBLPDF()" class="px-5 py-2 bg-brand text-white font-bold rounded hover:bg-brand-dark transition text-sm flex items-center gap-2 shadow">
+                    <i class="fa-solid fa-file-pdf"></i> Xuất Bill of Lading (PDF)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="co-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl mx-4 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-brand text-white p-4 flex justify-between items-center">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-certificate"></i> Tùy Chỉnh Giấy Chứng Nhận Xuất Xứ (C/O)
+                </h3>
+                <button onclick="closeCOModal()" class="text-white/80 hover:text-white text-xl font-bold">&times;</button>
+            </div>
+            <div class="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Số C/O (Reference No.)</label>
+                        <input type="text" id="co-ref-no" value="VN-US 26/08/00189" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Mẫu C/O (Form Type)</label>
+                        <select id="co-form-type" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                            <option value="FORM B (Non-Preferential)">FORM B (Chứng nhận chung)</option>
+                            <option value="FORM B">FORM B</option>
+                            <option value="FORM E">FORM E (ASEAN - China)</option>
+                            <option value="FORM D">FORM D (ATIGA)</option>
+                            <option value="FORM AK">FORM AK (ASEAN - Korea)</option>
+                            <option value="FORM EUR.1">FORM EUR.1 (EVFTA)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tiêu Chuẩn Xuất Xứ (Origin Criterion)</label>
+                        <input type="text" id="co-criterion" value="WO (Wholly Obtained)" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Cơ Quan Cấp C/O (Issuing Authority)</label>
+                        <input type="text" id="co-authority" value="VIETNAM CHAMBER OF COMMERCE AND INDUSTRY (VCCI)" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-100 p-4 border-t flex justify-end gap-3">
+                <button onclick="closeCOModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded text-sm font-semibold transition">Hủy</button>
+                <button onclick="generateCustomCOPDF()" class="px-5 py-2 bg-brand text-white font-bold rounded hover:bg-brand-dark transition text-sm flex items-center gap-2 shadow">
+                    <i class="fa-solid fa-file-pdf"></i> Xuất Certificate of Origin (PDF)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="insurance-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl mx-4 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-brand text-white p-4 flex justify-between items-center">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved"></i> Tùy Chỉnh Chứng Thư Bảo Hiểm (Insurance Certificate)
+                </h3>
+                <button onclick="closeInsuranceModal()" class="text-white/80 hover:text-white text-xl font-bold">&times;</button>
+            </div>
+            <div class="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Số Đơn Bảo Hiểm (Policy No.)</label>
+                        <input type="text" id="ins-policy-no" value="BAOVIET-2026-INS-778" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Công Ty Bảo Hiểm (Insurer)</label>
+                        <input type="text" id="ins-company" value="BAO VIET INSURANCE CORPORATION" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Số Tiền Bảo Hiểm (Sum Insured)</label>
+                        <input type="text" id="ins-amount" value="USD 49,500.00 (110% CIF Value)" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Điều Khoản Bảo Hiểm (Conditions of Cover)</label>
+                        <input type="text" id="ins-conditions" value="Institute Cargo Clauses (A) 1/1/82 including War & Strikes" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-100 p-4 border-t flex justify-end gap-3">
+                <button onclick="closeInsuranceModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded text-sm font-semibold transition">Hủy</button>
+                <button onclick="generateCustomInsurancePDF()" class="px-5 py-2 bg-brand text-white font-bold rounded hover:bg-brand-dark transition text-sm flex items-center gap-2 shadow">
+                    <i class="fa-solid fa-file-pdf"></i> Xuất Insurance Certificate (PDF)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { jsPDF } = window.jspdf;
+
+        // Tải Font Tiếng Việt Roboto để sửa lỗi hiển thị Tiếng Việt trong jsPDF
+        let robotoRegularBase64 = "";
+        let robotoBoldBase64 = "";
+
+        async function fetchFonts() {
+            try {
+                const resReg = await fetch("https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf");
+                const blobReg = await resReg.blob();
+                robotoRegularBase64 = await blobToBase64(blobReg);
+
+                const resBold = await fetch("https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf");
+                const blobBold = await resBold.blob();
+                robotoBoldBase64 = await blobToBase64(blobBold);
+            } catch (e) {
+                console.warn("Chưa tải được font bổ trợ, sử dụng font chuẩn.", e);
+            }
+        }
+
+        function blobToBase64(blob) {
+            return new Promise((resolve, _) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const base64data = reader.result.split(',')[1];
+                    resolve(base64data);
+                };
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        fetchFonts();
+
+        function switchTab(tab) {
+            document.getElementById('module-generator').classList.add('hidden');
+            document.getElementById('module-info').classList.add('hidden');
+            
+            document.getElementById('tab-gen').classList.remove('active-tab', 'text-brand');
+            document.getElementById('tab-info').classList.remove('active-tab', 'text-brand');
+            
+            document.getElementById('tab-gen').classList.add('text-slate-500');
+            document.getElementById('tab-info').classList.add('text-slate-500');
+
+            if(tab === 'gen') {
+                document.getElementById('module-generator').classList.remove('hidden');
+                document.getElementById('tab-gen').classList.add('active-tab');
+                document.getElementById('tab-gen').classList.remove('text-slate-500');
+            } else {
+                document.getElementById('module-info').classList.remove('hidden');
+                document.getElementById('tab-info').classList.add('active-tab');
+                document.getElementById('tab-info').classList.remove('text-slate-500');
+            }
+        }
+
+        // Tạo instance jsPDF với font cấu hình
+        function createPdfInstance() {
+            const doc = new jsPDF();
+            if (robotoRegularBase64 && robotoBoldBase64) {
+                doc.addFileToVFS("Roboto-Regular.ttf", robotoRegularBase64);
+                doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
+                doc.addFileToVFS("Roboto-Bold.ttf", robotoBoldBase64);
+                doc.addFont("Roboto-Bold.ttf", "Roboto", "bold");
+                doc.setFont("Roboto", "normal");
+            } else {
+                doc.setFont("helvetica", "normal");
+            }
+            return doc;
+        }
+
+        // Cấu hình chuẩn Header bài làm của Sinh viên
+        function addStudentHeader(doc) {
+            const name = document.getElementById('student-name').value.trim();
+            const id = document.getElementById('student-id').value.trim();
+            
+            let headerText = "";
+            if (name || id) {
+                headerText = `BÀI LÀM SINH VIÊN: ${name.toUpperCase()} - MSSV: ${id.toUpperCase()}`;
+            } else {
+                headerText = `BÀI LÀM SINH VIÊN: (Chưa nhập thông tin sinh viên)`;
+            }
+
+            const totalPages = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+                doc.setTextColor(100, 116, 139);
+                
+                // Khung Header
+                doc.setDrawColor(203, 213, 225);
+                doc.setFillColor(248, 250, 252);
+                doc.rect(10, 6, 190, 8, 'FD');
+                
+                doc.text(headerText, 14, 11.5);
+                doc.text(`Trang ${i}/${totalPages}`, 196, 11.5, { align: 'right' });
+            }
+            doc.setTextColor(0, 0, 0);
+        }
+
+        // ==================== 1. MODAL SALES CONTRACT ====================
+        function openContractModal() {
+            document.getElementById('sc-contract-no').value = document.getElementById('m-contract').value;
+            document.getElementById('sc-seller').value = document.getElementById('m-exporter').value;
+            document.getElementById('sc-buyer').value = document.getElementById('m-importer').value;
+            document.getElementById('sc-commodity').value = document.getElementById('m-commodity').value;
+            document.getElementById('sc-quantity').value = document.getElementById('m-qty').value;
+            
+            const total = parseFloat(document.getElementById('m-amount').value) || 0;
+            document.getElementById('sc-total-amount').value = `USD ${total.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+
+            document.getElementById('contract-modal').classList.remove('hidden');
+        }
+
+        function closeContractModal() {
+            document.getElementById('contract-modal').classList.add('hidden');
+        }
+
+        function generateCustomContractPDF() {
+            const doc = createPdfInstance();
+            let y = 22;
+
+            doc.setFontSize(15);
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text("SALES CONTRACT", 105, y, { align: "center" });
+            
+            y += 7;
+            doc.setFontSize(9);
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            doc.text(`Contract No: ${document.getElementById('sc-contract-no').value}`, 14, y);
+            doc.text(`Date: ${document.getElementById('sc-date').value}`, 196, y, { align: "right" });
+            
+            y += 5;
+            doc.text(`Place of Issue: ${document.getElementById('sc-place').value}`, 14, y);
+            
+            y += 6;
+            doc.setDrawColor(180, 180, 180);
+            doc.line(14, y, 196, y);
+            y += 6;
+
+            // Bên Bán & Bên Mua
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text("THE SELLER (PARTY A):", 14, y);
+            doc.text("THE BUYER (PARTY B):", 110, y);
+            
+            y += 5;
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            
+            const sellerLines = doc.splitTextToSize(document.getElementById('sc-seller').value, 82);
+            const buyerLines = doc.splitTextToSize(document.getElementById('sc-buyer').value, 82);
+            
+            doc.text(sellerLines, 14, y);
+            doc.text(buyerLines, 110, y);
+            
+            y += Math.max(sellerLines.length, buyerLines.length) * 4.5 + 6;
+
+            // Cấu trúc các điều khoản hợp đồng
+            const terms = [
+                { title: "ARTICLE 1: COMMODITY & SPECIFICATION", content: document.getElementById('sc-commodity').value },
+                { title: "ARTICLE 2: QUANTITY", content: document.getElementById('sc-quantity').value },
+                { title: "ARTICLE 3: UNIT PRICE", content: document.getElementById('sc-unit-price').value },
+                { title: "ARTICLE 4: TOTAL AMOUNT", content: document.getElementById('sc-total-amount').value },
+                { title: "ARTICLE 5: PACKING & MARKING", content: document.getElementById('sc-packing').value },
+                { title: "ARTICLE 6: SHIPMENT & DELIVERY", content: document.getElementById('sc-shipment').value },
+                { title: "ARTICLE 7: PAYMENT TERMS", content: document.getElementById('sc-payment').value },
+                { title: "ARTICLE 8: INSURANCE", content: document.getElementById('sc-insurance').value },
+                { title: "ARTICLE 9: ARBITRATION & GOVERNING LAW", content: document.getElementById('sc-arbitration').value }
+            ];
+
+            terms.forEach(t => {
+                const lines = doc.splitTextToSize(t.content, 182);
+                const blockHeight = 6 + (lines.length * 4.5);
+                
+                if (y + blockHeight > 275) {
+                    doc.addPage();
+                    y = 22;
+                }
+
+                doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+                doc.text(t.title, 14, y);
+                y += 4.5;
+
+                doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+                doc.text(lines, 14, y);
+                y += (lines.length * 4.5) + 3;
+            });
+
+            // Chữ ký
+            if (y + 35 > 275) {
+                doc.addPage();
+                y = 22;
+            } else {
+                y += 6;
+            }
+
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text("FOR AND ON BEHALF OF SELLER", 30, y);
+            doc.text("FOR AND ON BEHALF OF BUYER", 130, y);
+            
+            y += 20;
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            doc.text("(Authorized Signature & Stamp)", 30, y);
+            doc.text("(Authorized Signature & Stamp)", 130, y);
+
+            addStudentHeader(doc);
+            doc.save(`Sales_Contract_${document.getElementById('sc-contract-no').value}.pdf`);
+            closeContractModal();
+        }
+
+        // ==================== 2. MODAL INVOICE ====================
+        function openInvoiceModal() {
+            document.getElementById('inv-preview-contract').innerText = document.getElementById('m-contract').value;
+            document.getElementById('inv-preview-exporter').innerText = document.getElementById('m-exporter').value.split('\n')[0];
+            document.getElementById('inv-preview-importer').innerText = document.getElementById('m-importer').value.split('\n')[0];
+            document.getElementById('inv-preview-commodity').innerText = document.getElementById('m-commodity').value;
+            document.getElementById('inv-preview-amount').innerText = parseFloat(document.getElementById('m-amount').value).toLocaleString('en-US');
+
+            document.getElementById('invoice-modal').classList.remove('hidden');
+        }
+
+        function closeInvoiceModal() {
+            document.getElementById('invoice-modal').classList.add('hidden');
+        }
+
+        function generateCustomInvoicePDF() {
+            const doc = createPdfInstance();
+            let y = 22;
+
+            doc.setFontSize(16);
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text("COMMERCIAL INVOICE", 105, y, { align: "center" });
+            
+            y += 8;
+            doc.setFontSize(9);
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            
+            doc.text(`Invoice No: INV-${document.getElementById('m-contract').value}`, 14, y);
+            doc.text(`Date: ${new Date().toLocaleDateString('en-GB')}`, 196, y, { align: "right" });
+            
+            y += 5;
+            doc.text(`Contract No: ${document.getElementById('m-contract').value}`, 14, y);
+
+            y += 6;
+            doc.setDrawColor(180, 180, 180);
+            doc.line(14, y, 196, y);
+            y += 6;
+
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text("EXPORTER / SHIPPER:", 14, y);
+            doc.text("IMPORTER / CONSIGNEE:", 110, y);
+            
+            y += 5;
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            const expLines = doc.splitTextToSize(document.getElementById('m-exporter').value, 82);
+            const impLines = doc.splitTextToSize(document.getElementById('m-importer').value, 82);
+            doc.text(expLines, 14, y);
+            doc.text(impLines, 110, y);
+            
+            y += Math.max(expLines.length, impLines.length) * 4.5 + 6;
+
+            // Bảng mặt hàng
+            const qty = document.getElementById('m-qty').value;
+            const amount = parseFloat(document.getElementById('m-amount').value) || 0;
+            
+            doc.autoTable({
+                startY: y,
+                head: [['Description of Goods', 'HS Code', 'Quantity', 'Amount (USD)']],
+                body: [
+                    [
+                        document.getElementById('m-commodity').value,
+                        document.getElementById('m-hscode').value,
+                        qty,
+                        `$${amount.toLocaleString('en-US', {minimumFractionDigits: 2})}`
+                    ]
+                ],
+                foot: [['TOTAL', '', '', `$${amount.toLocaleString('en-US', {minimumFractionDigits: 2})}`]],
+                styles: { font: robotoRegularBase64 ? "Roboto" : "helvetica", fontSize: 8.5 },
+                headStyles: { fillColor: [2, 132, 199], textColor: [255, 255, 255] },
+                margin: { left: 14, right: 14 }
+            });
+
+            y = doc.lastAutoTable.finalY + 8;
+
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text("TERMS & CONDITIONS:", 14, y);
+            y += 5;
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            doc.text(`Incoterms: ${document.getElementById('m-incoterm').value}`, 14, y); y += 4.5;
+            doc.text(`Payment Terms: ${document.getElementById('inv-payment-terms').value}`, 14, y); y += 4.5;
+            doc.text(`Bank Details: ${document.getElementById('inv-bank-details').value}`, 14, y); y += 4.5;
+
+            const extraLines = doc.splitTextToSize(`Notes: ${document.getElementById('inv-extra-terms').value}`, 182);
+            doc.text(extraLines, 14, y);
+
+            addStudentHeader(doc);
+            doc.save(`Commercial_Invoice_${document.getElementById('m-contract').value}.pdf`);
+            closeInvoiceModal();
+        }
+
+        // ==================== 3. MODAL PACKING LIST ====================
+        let plRows = [
+            { cont: "MSKU1234567 / SEAL001", desc: "COFFEE BEANS GRADE 1 IN JUTE BAGS", pkgs: "150 BAGS", nw: "9,000 KGS", gw: "9,600 KGS", cbm: "18.5" },
+            { cont: "MSKU7654321 / SEAL002", desc: "COFFEE BEANS GRADE 1 IN JUTE BAGS", pkgs: "150 BAGS", nw: "9,000 KGS", gw: "9,600 KGS", cbm: "18.5" }
+        ];
+
+        function openPackingListModal() {
+            document.getElementById('pl-preview-contract').innerText = document.getElementById('m-contract').value;
+            document.getElementById('pl-preview-route').innerText = `${document.getElementById('m-pol').value} -> ${document.getElementById('m-pod').value}`;
+            document.getElementById('pl-preview-exporter').innerText = document.getElementById('m-exporter').value.split('\n')[0];
+            document.getElementById('pl-preview-importer').innerText = document.getElementById('m-importer').value.split('\n')[0];
+
+            renderPackingTable();
+            document.getElementById('packing-modal').classList.remove('hidden');
+        }
+
+        function closePackingListModal() {
+            document.getElementById('packing-modal').classList.add('hidden');
+        }
+
+        function renderPackingTable() {
+            const tbody = document.getElementById('pl-table-body');
+            tbody.innerHTML = '';
+            plRows.forEach((row, index) => {
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-slate-50">
+                        <td class="p-1.5 border-r"><input type="text" value="${row.cont}" onchange="plRows[${index}].cont=this.value" class="w-full p-1 border rounded text-xs"></td>
+                        <td class="p-1.5 border-r"><input type="text" value="${row.desc}" onchange="plRows[${index}].desc=this.value" class="w-full p-1 border rounded text-xs"></td>
+                        <td class="p-1.5 border-r"><input type="text" value="${row.pkgs}" onchange="plRows[${index}].pkgs=this.value" class="w-full p-1 border rounded text-xs text-center"></td>
+                        <td class="p-1.5 border-r"><input type="text" value="${row.nw}" onchange="plRows[${index}].nw=this.value" class="w-full p-1 border rounded text-xs text-center"></td>
+                        <td class="p-1.5 border-r"><input type="text" value="${row.gw}" onchange="plRows[${index}].gw=this.value" class="w-full p-1 border rounded text-xs text-center"></td>
+                        <td class="p-1.5 border-r"><input type="text" value="${row.cbm}" onchange="plRows[${index}].cbm=this.value" class="w-full p-1 border rounded text-xs text-center"></td>
+                        <td class="p-1.5 text-center"><button onclick="removePackingRow(${index})" class="text-red-500 hover:text-red-700 font-bold">&times;</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function addPackingRow() {
+            plRows.push({ cont: "", desc: "", pkgs: "", nw: "", gw: "", cbm: "" });
+            renderPackingTable();
+        }
+
+        function removePackingRow(index) {
+            plRows.splice(index, 1);
+            renderPackingTable();
+        }
+
+        function generateCustomPackingListPDF() {
+            const doc = createPdfInstance();
+            let y = 22;
+
+            doc.setFontSize(16);
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text("DETAILED PACKING LIST", 105, y, { align: "center" });
+
+            y += 8;
+            doc.setFontSize(9);
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            doc.text(`PKL No: PL-${document.getElementById('m-contract').value}`, 14, y);
+            doc.text(`Date: ${new Date().toLocaleDateString('en-GB')}`, 196, y, { align: "right" });
+
+            y += 6;
+            doc.setDrawColor(180, 180, 180);
+            doc.line(14, y, 196, y);
+            y += 6;
+
+            const body = plRows.map(r => [r.cont, r.desc, r.pkgs, r.nw, r.gw, r.cbm]);
+
+            doc.autoTable({
+                startY: y,
+                head: [['Cont/Seal No.', 'Description', 'Packages', 'N.W (KGS)', 'G.W (KGS)', 'CBM']],
+                body: body,
+                styles: { font: robotoRegularBase64 ? "Roboto" : "helvetica", fontSize: 8.5 },
+                headStyles: { fillColor: [2, 132, 199], textColor: [255, 255, 255] },
+                margin: { left: 14, right: 14 }
+            });
+
+            y = doc.lastAutoTable.finalY + 8;
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text("SHIPPING MARKS & NOTES:", 14, y);
+            y += 5;
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            const markLines = doc.splitTextToSize(document.getElementById('pl-shipping-marks').value, 182);
+            doc.text(markLines, 14, y);
+
+            addStudentHeader(doc);
+            doc.save(`Packing_List_${document.getElementById('m-contract').value}.pdf`);
+            closePackingListModal();
+        }
+
+        // ==================== 4. MODAL BOOKING NOTE ====================
+        let bookingRows = [
+            { type: "40ft High Cube (40'HC)", qty: "1 FCL", req: "Dry Container, Clean, Odorless", gw: document.getElementById('m-gw').value + " KGS" }
+        ];
+
+        function openBookingModal() {
+            renderBookingTable();
+            document.getElementById('booking-modal').classList.remove('hidden');
+        }
+
+        function closeBookingModal() {
+            document.getElementById('booking-modal').classList.add('hidden');
+        }
+
+        function renderBookingTable() {
+            const tbody = document.getElementById('bn-table-body');
+            tbody.innerHTML = '';
+            bookingRows.forEach((row, index) => {
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-slate-50">
+                        <td class="p-1.5 border-r"><input type="text" value="${row.type}" onchange="bookingRows[${index}].type=this.value" class="w-full p-1 border rounded text-xs"></td>
+                        <td class="p-1.5 border-r"><input type="text" value="${row.qty}" onchange="bookingRows[${index}].qty=this.value" class="w-full p-1 border rounded text-xs text-center"></td>
+                        <td class="p-1.5 border-r"><input type="text" value="${row.req}" onchange="bookingRows[${index}].req=this.value" class="w-full p-1 border rounded text-xs"></td>
+                        <td class="p-1.5 border-r"><input type="text" value="${row.gw}" onchange="bookingRows[${index}].gw=this.value" class="w-full p-1 border rounded text-xs text-center"></td>
+                        <td class="p-1.5 text-center"><button onclick="removeBookingRow(${index})" class="text-red-500 hover:text-red-700 font-bold">&times;</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function addBookingRow() {
+            bookingRows.push({ type: "", qty: "", req: "", gw: "" });
+            renderBookingTable();
+        }
+
+        function removeBookingRow(index) {
+            bookingRows.splice(index, 1);
+            renderBookingTable();
+        }
+
+        function generateCustomBookingPDF() {
+            const doc = createPdfInstance();
+            let y = 22;
+
+            doc.setFontSize(16);
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text("BOOKING CONFIRMATION / NOTE", 105, y, { align: "center" });
+
+            y += 8;
+            doc.setFontSize(9);
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            doc.text(`Booking No: ${document.getElementById('bn-booking-no').value}`, 14, y);
+            doc.text(`Carrier: ${document.getElementById('bn-carrier').value}`, 196, y, { align: "right" });
+
+            y += 5;
+            doc.text(`Vessel/Voyage: ${document.getElementById('bn-vessel').value}`, 14, y);
+            doc.text(`ETD: ${document.getElementById('bn-etd').value}`, 196, y, { align: "right" });
+
+            y += 6;
+            doc.setDrawColor(180, 180, 180);
+            doc.line(14, y, 196, y);
+            y += 6;
+
+            const body = bookingRows.map(r => [r.type, r.qty, r.req, r.gw]);
+
+            doc.autoTable({
+                startY: y,
+                head: [['Container Type', 'Quantity', 'Requirements', 'Est. G.W']],
+                body: body,
+                styles: { font: robotoRegularBase64 ? "Roboto" : "helvetica", fontSize: 8.5 },
+                headStyles: { fillColor: [2, 132, 199], textColor: [255, 255, 255] },
+                margin: { left: 14, right: 14 }
+            });
+
+            y = doc.lastAutoTable.finalY + 8;
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text("CUT-OFF TIMES & INSTRUCTIONS:", 14, y);
+            y += 5;
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            doc.text(`SI Cut-off: ${document.getElementById('bn-si-cutoff').value}`, 14, y); y += 4.5;
+            doc.text(`CY Cut-off: ${document.getElementById('bn-cy-cutoff').value}`, 14, y); y += 4.5;
+            doc.text(`Empty Depot: ${document.getElementById('bn-empty-depot').value}`, 14, y); y += 4.5;
+            doc.text(`Return Yard: ${document.getElementById('bn-return-yard').value}`, 14, y); y += 4.5;
+
+            const instLines = doc.splitTextToSize(`Special Instructions:\n${document.getElementById('bn-special-instructions').value}`, 182);
+            doc.text(instLines, 14, y);
+
+            addStudentHeader(doc);
+            doc.save(`Booking_Note_${document.getElementById('bn-booking-no').value}.pdf`);
+            closeBookingModal();
+        }
+
+        // ==================== 5. MODAL BILL OF LADING ====================
+        function openBLModal() {
+            document.getElementById('bl-shipper').value = document.getElementById('m-exporter').value;
+            document.getElementById('bl-notify').value = document.getElementById('m-importer').value;
+            document.getElementById('bl-modal').classList.remove('hidden');
+        }
+
+        function closeBLModal() {
+            document.getElementById('bl-modal').classList.add('hidden');
+        }
+
+        function generateCustomBLPDF() {
+            const doc = createPdfInstance();
+            let y = 22;
+
+            doc.setFontSize(15);
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text(document.getElementById('bl-type').value, 105, y, { align: "center" });
+
+            y += 7;
+            doc.setFontSize(9);
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            doc.text(`B/L No: ${document.getElementById('bl-number').value}`, 14, y);
+            doc.text(`Vessel/Voy: ${document.getElementById('bl-vessel').value}`, 196, y, { align: "right" });
+
+            y += 6;
+            doc.setDrawColor(180, 180, 180);
+            doc.line(14, y, 196, y);
+            y += 6;
+
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text("SHIPPER:", 14, y);
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            const shpLines = doc.splitTextToSize(document.getElementById('bl-shipper').value, 182);
+            doc.text(shpLines, 14, y + 4.5);
+            y += (shpLines.length * 4.5) + 6;
+
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text("CONSIGNEE:", 14, y);
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            const csgLines = doc.splitTextToSize(document.getElementById('bl-consignee').value, 182);
+            doc.text(csgLines, 14, y + 4.5);
+            y += (csgLines.length * 4.5) + 6;
+
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text("NOTIFY PARTY:", 14, y);
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            const ntfLines = doc.splitTextToSize(document.getElementById('bl-notify').value, 182);
+            doc.text(ntfLines, 14, y + 4.5);
+            y += (ntfLines.length * 4.5) + 6;
+
+            doc.autoTable({
+                startY: y,
+                head: [['Port of Loading', 'Port of Discharge', 'Freight Terms', 'No. of Originals']],
+                body: [[
+                    document.getElementById('m-pol').value,
+                    document.getElementById('m-pod').value,
+                    document.getElementById('bl-freight-payable').value,
+                    document.getElementById('bl-originals').value
+                ]],
+                styles: { font: robotoRegularBase64 ? "Roboto" : "helvetica", fontSize: 8.5 },
+                headStyles: { fillColor: [2, 132, 199], textColor: [255, 255, 255] },
+                margin: { left: 14, right: 14 }
+            });
+
+            addStudentHeader(doc);
+            doc.save(`Bill_of_Lading_${document.getElementById('bl-number').value}.pdf`);
+            closeBLModal();
+        }
+
+        // ==================== 6. MODAL CERTIFICATE OF ORIGIN ====================
+        function openCOModal() {
+            document.getElementById('co-modal').classList.remove('hidden');
+        }
+
+        function closeCOModal() {
+            document.getElementById('co-modal').classList.add('hidden');
+        }
+
+        function generateCustomCOPDF() {
+            const doc = createPdfInstance();
+            let y = 22;
+
+            doc.setFontSize(15);
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text("CERTIFICATE OF ORIGIN", 105, y, { align: "center" });
+            doc.setFontSize(10);
+            doc.text(document.getElementById('co-form-type').value, 105, y + 6, { align: "center" });
+
+            y += 15;
+            doc.setFontSize(9);
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            doc.text(`Reference No: ${document.getElementById('co-ref-no').value}`, 14, y);
+            doc.text(`Issuing Authority: ${document.getElementById('co-authority').value}`, 14, y + 5);
+
+            y += 12;
+            doc.setDrawColor(180, 180, 180);
+            doc.line(14, y, 196, y);
+            y += 6;
+
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text("EXPORTER / PRODUCER:", 14, y);
+            doc.text("CONSIGNEE:", 110, y);
+
+            y += 5;
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            const expLines = doc.splitTextToSize(document.getElementById('m-exporter').value, 82);
+            const impLines = doc.splitTextToSize(document.getElementById('m-importer').value, 82);
+            doc.text(expLines, 14, y);
+            doc.text(impLines, 110, y);
+
+            y += Math.max(expLines.length, impLines.length) * 4.5 + 6;
+
+            doc.autoTable({
+                startY: y,
+                head: [['Item & Description', 'HS Code', 'Origin Criterion', 'G.W (KGS)']],
+                body: [[
+                    document.getElementById('m-commodity').value,
+                    document.getElementById('m-hscode').value,
+                    document.getElementById('co-criterion').value,
+                    document.getElementById('m-gw').value
+                ]],
+                styles: { font: robotoRegularBase64 ? "Roboto" : "helvetica", fontSize: 8.5 },
+                headStyles: { fillColor: [2, 132, 199], textColor: [255, 255, 255] },
+                margin: { left: 14, right: 14 }
+            });
+
+            addStudentHeader(doc);
+            doc.save(`Certificate_of_Origin_${document.getElementById('co-ref-no').value}.pdf`);
+            closeCOModal();
+        }
+
+        // ==================== 7. MODAL INSURANCE CERTIFICATE ====================
+        function openInsuranceModal() {
+            document.getElementById('insurance-modal').classList.remove('hidden');
+        }
+
+        function closeInsuranceModal() {
+            document.getElementById('insurance-modal').classList.add('hidden');
+        }
+
+        function generateCustomInsurancePDF() {
+            const doc = createPdfInstance();
+            let y = 22;
+
+            doc.setFontSize(15);
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text("CERTIFICATE OF INSURANCE", 105, y, { align: "center" });
+
+            y += 8;
+            doc.setFontSize(9);
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            doc.text(`Policy No: ${document.getElementById('ins-policy-no').value}`, 14, y);
+            doc.text(`Insurer: ${document.getElementById('ins-company').value}`, 196, y, { align: "right" });
+
+            y += 6;
+            doc.setDrawColor(180, 180, 180);
+            doc.line(14, y, 196, y);
+            y += 6;
+
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
+            doc.text("INSURED / APPLICANT:", 14, y);
+            y += 5;
+            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
+            const expLines = doc.splitTextToSize(document.getElementById('m-exporter').value, 182);
+            doc.text(expLines, 14, y);
+            y += (expLines.length * 4.5) + 5;
+
+            doc.text(`Sum Insured: ${document.getElementById('ins-amount').value}`, 14, y); y += 5;
+            doc.text(`Conditions of Cover: ${document.getElementById('ins-conditions').value}`, 14, y); y += 5;
+            doc.text(`Voyage: From ${document.getElementById('m-pol').value} to ${document.getElementById('m-pod').value}`, 14, y); y += 8;
+
+            const goodsLines = doc.splitTextToSize(`Goods Description: ${document.getElementById('m-commodity').value}`, 182);
+            doc.text(goodsLines, 14, y);
+
+            addStudentHeader(doc);
+            doc.save(`Insurance_Certificate_${document.getElementById('ins-policy-no').value}.pdf`);
+            closeInsuranceModal();
+        }
+
+        // ==================== TẢI TOÀN BỘ BỘ CHỨNG TỪ (PDF) ====================
+        function generateAllPDFs() {
+            alert("Hệ thống chuẩn bị xuất trọn bộ 7 chứng từ tiêu chuẩn (Hợp đồng, Invoice, Packing List, Booking, Bill of Lading, C/O, Insurance). Vui lòng xác nhận tải xuống.");
+            
+            openContractModal(); generateCustomContractPDF();
+            setTimeout(() => { openInvoiceModal(); generateCustomInvoicePDF(); }, 400);
+            setTimeout(() => { openPackingListModal(); generateCustomPackingListPDF(); }, 800);
+            setTimeout(() => { openBookingModal(); generateCustomBookingPDF(); }, 1200);
+            setTimeout(() => { openBLModal(); generateCustomBLPDF(); }, 1600);
+            setTimeout(() => { openCOModal(); generateCustomCOPDF(); }, 2000);
+            setTimeout(() => { openInsuranceModal(); generateCustomInsurancePDF(); }, 2400);
+        }
+    </script>
+</body>
+</html>
