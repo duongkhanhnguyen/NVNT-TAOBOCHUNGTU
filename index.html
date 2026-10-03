@@ -1,1338 +1,165 @@
 <!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Tạo & Thẩm Định Bộ Chứng Từ Ngoại Thương (TradeDoc Pro)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            light: '#e0f2fe',
-                            DEFAULT: '#0284c7',
-                            dark: '#0369a1'
-                        },
-                        warn: {
-                            light: '#fef9c3',
-                            DEFAULT: '#eab308'
-                        },
-                        danger: {
-                            light: '#fee2e2',
-                            DEFAULT: '#dc2626'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        .active-tab {
-            border-bottom: 3px solid #0284c7;
-            color: #0284c7;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body class="bg-slate-50 font-sans text-slate-800 min-h-screen flex flex-col">
-
-    <header class="bg-brand text-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <i class="fa-solid fa-file-contract text-2xl text-warn-light"></i>
-                <h1 class="text-xl font-bold tracking-wide">HỆ THỐNG TẠO BỘ CHỨNG TỪ NGOẠI THƯƠNG</h1>
-            </div>
-            <span class="text-xs bg-brand-dark px-3 py-1 rounded-full border border-blue-300">Dành cho Đào tạo & Thực hành XNK</span>
-        </div>
-    </header>
-
-    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10">
-        <div class="max-w-7xl mx-auto px-4 flex gap-8">
-            <button onclick="switchTab('gen')" id="tab-gen" class="py-4 px-2 active-tab flex items-center gap-2 hover:text-brand transition">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Module 1: Sinh Chứng Từ (Generator)
-            </button>
-            <button onclick="switchTab('info')" id="tab-info" class="py-4 px-2 text-slate-500 flex items-center gap-2 hover:text-brand transition">
-                <i class="fa-solid fa-id-card"></i> Thông Tin Chung (Sinh Viên)
-            </button>
-        </div>
-    </div>
-
-    <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
-
-        <section id="module-generator" class="space-y-6">
-            <div class="bg-brand-light border-l-4 border-brand p-4 rounded-r shadow-sm">
-                <p class="text-sm text-brand-dark">
-                    <i class="fa-solid fa-circle-info mr-1"></i>
-                    <strong>Hướng dẫn:</strong> Sinh viên nhập thông tin lô hàng vào <strong>Master Entry Panel</strong> dưới đây. Các ô nhập liệu được mở rộng tối đa để quan sát toàn bộ văn bản. Hệ thống sẽ tự động nhân bản và điền chính xác vào toàn bộ chứng từ tiêu chuẩn xuất khẩu.
-                </p>
-            </div>
-
-            <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
-                <h2 class="text-lg font-bold text-slate-700 mb-4 pb-2 border-b flex items-center gap-2">
-                    <i class="fa-solid fa-pen-to-square text-brand"></i> Master Entry Panel (Dữ liệu gốc Lô hàng)
-                </h2>
-
-                <form id="master-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    <div class="flex flex-col">
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Số Hợp Đồng / LC</label>
-                        <textarea id="m-contract" rows="2" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">IMP-2026-EXP-08</textarea>
-                    </div>
-
-                    <div class="flex flex-col">
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Người Xuất Khẩu (Exporter)</label>
-                        <textarea id="m-exporter" rows="3" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">VIETNAM AGRI-EXPORT CO., LTD
-123 NGUYEN HUE STREET, DISTRICT 1, HO CHI MINH CITY, VIETNAM</textarea>
-                    </div>
-
-                    <div class="flex flex-col">
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Người Nhập Khẩu (Importer)</label>
-                        <textarea id="m-importer" rows="3" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">GLOBAL FOODS IMPORTS INC
-456 PACIFIC AVENUE, LOS ANGELES, CA 90001, USA</textarea>
-                    </div>
-
-                    <div class="flex flex-col">
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Mô tả Hàng hóa</label>
-                        <textarea id="m-commodity" rows="3" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">VIETNAMESE ROBUSTA COFFEE BEANS GRADE 1, SCREEN 18, MAXIMUM 2% BROKEN, MOISTURE 12.5% MAX</textarea>
-                    </div>
-
-                    <div class="flex flex-col">
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Mã HS Code</label>
-                        <textarea id="m-hscode" rows="2" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">0901.11.10</textarea>
-                    </div>
-
-                    <div class="flex flex-col">
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Điều khoản Incoterms (Nhập tự do)</label>
-                        <textarea id="m-incoterm" rows="2" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">CIF Los Angeles Port, USA (Incoterms 2020)</textarea>
-                    </div>
-
-                    <div class="flex flex-col">
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Trọng lượng Gross (KGS)</label>
-                        <input type="number" id="m-gw" value="19200" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-
-                    <div class="flex flex-col">
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Trọng lượng Net (KGS)</label>
-                        <input type="number" id="m-nw" value="18000" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-
-                    <div class="flex flex-col">
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Số lượng & Đóng gói</label>
-                        <textarea id="m-qty" rows="2" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">300 BAGS (60 KGS NET PER JUTE BAG)</textarea>
-                    </div>
-
-                    <div class="flex flex-col">
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Tổng Trị Giá ($ USD)</label>
-                        <input type="number" id="m-amount" value="45000" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-
-                    <div class="flex flex-col">
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cảng Đi (POL)</label>
-                        <textarea id="m-pol" rows="2" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">CAT LAI PORT, HO CHI MINH CITY, VIETNAM</textarea>
-                    </div>
-
-                    <div class="flex flex-col">
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cảng Đến (POD)</label>
-                        <textarea id="m-pod" rows="2" class="w-full p-2.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition resize-y">LOS ANGELES PORT, CALIFORNIA, USA</textarea>
-                    </div>
-                </form>
-            </div>
-
-            <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
-                <h3 class="font-bold text-slate-700 mb-4">Danh Mục Xuất File PDF Tự Động:</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <button onclick="openContractModal()" class="p-3 bg-brand-light hover:bg-sky-200 border border-brand/30 rounded-lg flex items-center gap-2 text-sm font-semibold text-brand-dark transition shadow-sm">
-                        <i class="fa-solid fa-file-signature text-brand text-lg"></i> Hợp Đồng Ngoại Thương
-                    </button>
-                    <button onclick="openInvoiceModal()" class="p-3 bg-brand-light hover:bg-sky-200 border border-brand/30 rounded-lg flex items-center gap-2 text-sm font-semibold text-brand-dark transition shadow-sm">
-                        <i class="fa-solid fa-file-invoice-dollar text-brand text-lg"></i> Commercial Invoice
-                    </button>
-                    <button onclick="openPackingListModal()" class="p-3 bg-brand-light hover:bg-sky-200 border border-brand/30 rounded-lg flex items-center gap-2 text-sm font-semibold text-brand-dark transition shadow-sm">
-                        <i class="fa-solid fa-boxes-packing text-brand text-lg"></i> Detailed Packing List
-                    </button>
-                    <button onclick="openBookingModal()" class="p-3 bg-brand-light hover:bg-sky-200 border border-brand/30 rounded-lg flex items-center gap-2 text-sm font-semibold text-brand-dark transition shadow-sm">
-                        <i class="fa-solid fa-ship text-brand text-lg"></i> Booking Note
-                    </button>
-                    <button onclick="openBLModal()" class="p-3 bg-brand-light hover:bg-sky-200 border border-brand/30 rounded-lg flex items-center gap-2 text-sm font-semibold text-brand-dark transition shadow-sm">
-                        <i class="fa-solid fa-file-contract text-brand text-lg"></i> Bill of Lading
-                    </button>
-                    <button onclick="openCOModal()" class="p-3 bg-brand-light hover:bg-sky-200 border border-brand/30 rounded-lg flex items-center gap-2 text-sm font-semibold text-brand-dark transition shadow-sm">
-                        <i class="fa-solid fa-certificate text-brand text-lg"></i> Certificate of Origin
-                    </button>
-                    <button onclick="openInsuranceModal()" class="p-3 bg-brand-light hover:bg-sky-200 border border-brand/30 rounded-lg flex items-center gap-2 text-sm font-semibold text-brand-dark transition shadow-sm">
-                        <i class="fa-solid fa-shield-halved text-brand text-lg"></i> Insurance Certificate
-                    </button>
-                    <button onclick="generateAllPDFs()" class="col-span-1 md:col-span-1 p-3 bg-brand text-white font-bold rounded-lg shadow hover:bg-brand-dark transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-file-pdf"></i> TẢI TRỌN BỘ CHỨNG TỪ (PDF)
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <section id="module-info" class="space-y-6 hidden">
-            <div class="bg-brand-light border-l-4 border-brand p-4 rounded-r shadow-sm">
-                <p class="text-sm text-brand-dark">
-                    <i class="fa-solid fa-user-graduate mr-1"></i>
-                    <strong>Khai báo thông tin cá nhân:</strong> Vui lòng nhập đầy đủ Họ và tên, Mã số sinh viên. Thông tin này sẽ tự động hiển thị ở đầu trang (Header) của từng file PDF chứng từ khi xuất file để Giáo viên tiến hành chấm bài.
-                </p>
-            </div>
-
-            <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200 max-w-2xl mx-auto space-y-5">
-                <h2 class="text-lg font-bold text-slate-700 mb-4 pb-2 border-b flex items-center gap-2">
-                    <i class="fa-solid fa-id-card text-brand"></i> Thông Tin Sinh Viên Thực Hiện Bài Tập
-                </h2>
-
-                <div class="flex flex-col space-y-2">
-                    <label class="block text-xs font-bold uppercase text-slate-600">Họ và Tên Sinh Viên</label>
-                    <input type="text" id="student-name" placeholder="Ví dụ: Nguyễn Văn A" class="w-full p-3 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition">
-                </div>
-
-                <div class="flex flex-col space-y-2">
-                    <label class="block text-xs font-bold uppercase text-slate-600">Mã Số Sinh Viên (MSSV)</label>
-                    <input type="text" id="student-id" placeholder="Ví dụ: 22001234" class="w-full p-3 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-brand outline-none transition">
-                </div>
-
-                <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg text-xs text-amber-800 space-y-1">
-                    <p class="font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Lưu ý dành cho Sinh viên:</p>
-                    <p>- Header hiển thị dạng: <strong>[ SINH VIÊN: HỌ VÀ TÊN - MSSV: ... ]</strong> ở phía trên cùng mỗi trang PDF.</p>
-                    <p>- Kiểm tra chính xác MSSV trước khi xuất toàn bộ file PDF để phục vụ cho việc chấm bài của Giáo viên.</p>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <footer class="bg-slate-800 text-slate-300 text-xs py-4 border-t border-slate-700 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-2 text-center md:text-left">
-            <div>
-                <p class="font-semibold text-slate-200">
-                    <i class="fa-regular fa-copyright mr-1"></i> Phần mềm do <span class="text-sky-400 font-bold">GV Nguyễn Khánh Dương</span> phát triển.
-                </p>
-                <p class="text-slate-400 text-[11px] mt-0.5">
-                    Phần mềm dùng cho giảng dạy và học tập.
-                </p>
-            </div>
-            <div class="flex items-center gap-2">
-                <i class="fa-regular fa-envelope text-slate-400"></i>
-                <span>Mail:</span>
-                <a href="mailto:nguyenkhanhduong0111@gmail.com" class="text-sky-400 hover:underline font-medium">nguyenkhanhduong0111@gmail.com</a>
-            </div>
-        </div>
-    </footer>
-
-    <div id="contract-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-brand text-white p-4 flex justify-between items-center">
-                <h3 class="font-bold text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-file-signature"></i> Xem & Tùy Chỉnh Hợp Đồng Ngoại Thương (Sales Contract)
-                </h3>
-                <button onclick="closeContractModal()" class="text-white/80 hover:text-white text-xl font-bold">&times;</button>
-            </div>
-            <div class="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-3 rounded border border-slate-200">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Số Hợp Đồng (Contract No.)</label>
-                        <input type="text" id="sc-contract-no" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Ngày Ký (Date)</label>
-                        <input type="text" id="sc-date" value="15/08/2026" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Địa Điểm Ký (Place of Issue)</label>
-                        <input type="text" id="sc-place" value="Ho Chi Minh City, Vietnam" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">BÊN BÁN (THE SELLER - PARTY A)</label>
-                        <textarea id="sc-seller" rows="3" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">BÊN MUA (THE BUYER - PARTY B)</label>
-                        <textarea id="sc-buyer" rows="3" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none"></textarea>
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                    <h4 class="font-bold text-slate-700 text-xs uppercase border-b pb-1">Các Điều Khoản Hợp Đồng (Terms & Conditions)</h4>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 1: Tên hàng & Quy cách (Commodity & Specification)</label>
-                        <textarea id="sc-commodity" rows="2" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none"></textarea>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 2: Số lượng (Quantity)</label>
-                            <input type="text" id="sc-quantity" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 3: Đơn giá (Unit Price)</label>
-                            <input type="text" id="sc-unit-price" value="USD 150.00 / Bag" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 4: Tổng trị giá (Total Amount)</label>
-                            <input type="text" id="sc-total-amount" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 5: Đóng gói & Bao bì (Packing & Marking)</label>
-                            <textarea id="sc-packing" rows="2" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">Packed in new single jute bags of 60 KGS net each. Shipping marks: GLOBAL FOODS USA / PORT OF LOS ANGELES / MADE IN VIETNAM.</textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 6: Giao hàng (Shipment & Delivery)</label>
-                            <textarea id="sc-shipment" rows="2" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">Time of Shipment: Latest August 2026. Port of Loading: Cat Lai Port, Vietnam. Port of Discharge: Los Angeles Port, USA. Partial shipment: Allowed. Transhipment: Not allowed.</textarea>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 7: Thanh toán (Payment Terms)</label>
-                        <textarea id="sc-payment" rows="2" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">By Irrevocable Letter of Credit (L/C) at sight for 100% of total contract value in favor of the Seller, issued by a first-class international bank.</textarea>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 8: Bảo hiểm (Insurance)</label>
-                            <textarea id="sc-insurance" rows="2" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">To be covered by the Seller covering All Risks (ICC A) for 110% of CIF Invoice value.</textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Điều 9: Trọng tài & Pháp lý (Arbitration & Governing Law)</label>
-                            <textarea id="sc-arbitration" rows="2" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">Any dispute arising out of or in connection with this contract shall be settled by the Vietnam International Arbitration Centre (VIAC) under its UNCITRAL Rules.</textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-slate-100 p-4 border-t flex justify-end gap-3">
-                <button onclick="closeContractModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded text-sm font-semibold transition">Hủy</button>
-                <button onclick="generateCustomContractPDF()" class="px-5 py-2 bg-brand text-white font-bold rounded hover:bg-brand-dark transition text-sm flex items-center gap-2 shadow">
-                    <i class="fa-solid fa-file-pdf"></i> Xuất Hợp Đồng Ngoại Thương (PDF)
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="invoice-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-brand text-white p-4 flex justify-between items-center">
-                <h3 class="font-bold text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-file-invoice-dollar"></i> Xem & Tùy Chỉnh Commercial Invoice
-                </h3>
-                <button onclick="closeInvoiceModal()" class="text-white/80 hover:text-white text-xl font-bold">&times;</button>
-            </div>
-            <div class="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
-                <div class="bg-slate-50 p-3 rounded border text-xs text-slate-600 space-y-1">
-                    <p><strong>Số hợp đồng/LC:</strong> <span id="inv-preview-contract">---</span></p>
-                    <p><strong>Người xuất khẩu:</strong> <span id="inv-preview-exporter">---</span></p>
-                    <p><strong>Người nhập khẩu:</strong> <span id="inv-preview-importer">---</span></p>
-                    <p><strong>Mặt hàng:</strong> <span id="inv-preview-commodity">---</span> | <strong>Trị giá:</strong> $<span id="inv-preview-amount">---</span></p>
-                </div>
-                <hr>
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">
-                        <i class="fa-solid fa-pen-nib text-brand"></i> Điều Khoản Thanh Toán & Bổ Sung
-                    </label>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">1. Điều khoản Thanh toán</label>
-                            <input type="text" id="inv-payment-terms" value="By Irrevocable L/C at sight, 100% invoice value." class="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-brand outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">2. Thông tin Ngân hàng</label>
-                            <input type="text" id="inv-bank-details" value="Vietcombank Ho Chi Minh Branch, SWIFT: BFTVVNVX" class="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-brand outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">3. Ghi chú & Điều khoản bổ sung khác</label>
-                            <textarea id="inv-extra-terms" rows="3" class="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-brand outline-none">Goods to be packed in new single jute bags of 60 KGS net each.</textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-slate-100 p-4 border-t flex justify-end gap-3">
-                <button onclick="closeInvoiceModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded text-sm font-semibold transition">Hủy</button>
-                <button onclick="generateCustomInvoicePDF()" class="px-5 py-2 bg-brand text-white font-bold rounded hover:bg-brand-dark transition text-sm flex items-center gap-2 shadow">
-                    <i class="fa-solid fa-file-pdf"></i> Xuất Commercial Invoice (PDF)
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="packing-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-brand text-white p-4 flex justify-between items-center">
-                <h3 class="font-bold text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-boxes-packing"></i> Tùy Chỉnh Chi Tiết Đóng Gói (Detailed Packing List)
-                </h3>
-                <button onclick="closePackingListModal()" class="text-white/80 hover:text-white text-xl font-bold">&times;</button>
-            </div>
-            <div class="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50 p-3 rounded border text-xs text-slate-600">
-                    <p><strong>Số hợp đồng:</strong> <span id="pl-preview-contract">---</span></p>
-                    <p><strong>Phương thức VC:</strong> <span id="pl-preview-route">---</span></p>
-                    <p><strong>Người xuất khẩu:</strong> <span id="pl-preview-exporter">---</span></p>
-                    <p><strong>Người nhập khẩu:</strong> <span id="pl-preview-importer">---</span></p>
-                </div>
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="font-bold text-slate-700 flex items-center gap-2">
-                            <i class="fa-solid fa-list-check text-brand"></i> Bảng Quy Cách Đóng Gói Chi Tiết Lô Hàng
-                        </label>
-                        <button onclick="addPackingRow()" class="px-3 py-1 bg-green-600 text-white rounded text-xs font-bold hover:bg-green-700 transition flex items-center gap-1">
-                            <i class="fa-solid fa-plus"></i> Thêm Dòng
-                        </button>
-                    </div>
-                    <div class="overflow-x-auto border border-slate-200 rounded">
-                        <table class="w-full text-left text-xs border-collapse">
-                            <thead class="bg-slate-100 font-semibold text-slate-700 uppercase border-b">
-                                <tr>
-                                    <th class="p-2 border-r w-28">Số Cont / Seal</th>
-                                    <th class="p-2 border-r">Mô tả Kiện/Hàng hoá</th>
-                                    <th class="p-2 border-r w-20 text-center">Số Kiện</th>
-                                    <th class="p-2 border-r w-24 text-center">N.W (KGS)</th>
-                                    <th class="p-2 border-r w-24 text-center">G.W (KGS)</th>
-                                    <th class="p-2 border-r w-20 text-center">CBM (m³)</th>
-                                    <th class="p-2 text-center w-12">Xóa</th>
-                                </tr>
-                            </thead>
-                            <tbody id="pl-table-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Ghi chú phương thức đóng gói / Ký mã hiệu (Shipping Marks)</label>
-                    <textarea id="pl-shipping-marks" rows="2" class="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-brand outline-none">MARKS & NUMBERS:
-GLOBAL FOODS USA
-PORT OF LOS ANGELES
-MADE IN VIETNAM
-NOS: 1 - 300</textarea>
-                </div>
-            </div>
-            <div class="bg-slate-100 p-4 border-t flex justify-end gap-3">
-                <button onclick="closePackingListModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded text-sm font-semibold transition">Hủy</button>
-                <button onclick="generateCustomPackingListPDF()" class="px-5 py-2 bg-brand text-white font-bold rounded hover:bg-brand-dark transition text-sm flex items-center gap-2 shadow">
-                    <i class="fa-solid fa-file-pdf"></i> Xuất Detailed Packing List (PDF)
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="booking-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-brand text-white p-4 flex justify-between items-center">
-                <h3 class="font-bold text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-ship"></i> Xem & Tùy Chỉnh Lệnh Đặt Chỗ (Booking Note)
-                </h3>
-                <button onclick="closeBookingModal()" class="text-white/80 hover:text-white text-xl font-bold">&times;</button>
-            </div>
-            <div class="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-3 rounded border border-slate-200">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Mã Booking (Booking No.)</label>
-                        <input type="text" id="bn-booking-no" value="BK-2026-MAERSK-089" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Hãng Tàu (Shipping Line)</label>
-                        <input type="text" id="bn-carrier" value="MAERSK LINE" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tên Tàu / Số Chuyến (Vessel/Voy)</label>
-                        <input type="text" id="bn-vessel" value="MAERSK MC-KINNEY / V.2608E" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Thời Gian Hàng Cần Đến Cảng (SI Cut-off)</label>
-                        <input type="text" id="bn-si-cutoff" value="17:00 25/08/2026" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Thời Gian Đóng Cửa Cảng (CY Cut-off)</label>
-                        <input type="text" id="bn-cy-cutoff" value="12:00 26/08/2026" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Ngày Khởi Hành Dự Kiến (ETD)</label>
-                        <input type="text" id="bn-etd" value="28/08/2026" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Địa Điểm Lấy Rỗng (Empty Pickup)</label>
-                        <input type="text" id="bn-empty-depot" value="Tan Cang / ICD Transimex" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Nơi Hạ Bãi Hàng (Full Return Yard)</label>
-                        <input type="text" id="bn-return-yard" value="Cat Lai Terminal 1" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Cước Phí & Thanh Toán (Freight)</label>
-                        <select id="bn-freight-term" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                            <option value="FREIGHT PREPAID">FREIGHT PREPAID (Trả trước)</option>
-                            <option value="FREIGHT COLLECT">FREIGHT COLLECT (Trả sau)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="font-bold text-slate-700 flex items-center gap-2">
-                            <i class="fa-solid fa-cubes text-brand"></i> Bảng Đăng Ký Loại Container & Thiết Bị (Equipment Details)
-                        </label>
-                        <button onclick="addBookingRow()" class="px-3 py-1 bg-green-600 text-white rounded text-xs font-bold hover:bg-green-700 transition flex items-center gap-1">
-                            <i class="fa-solid fa-plus"></i> Thêm Loại Cont
-                        </button>
-                    </div>
-                    <div class="overflow-x-auto border border-slate-200 rounded">
-                        <table class="w-full text-left text-xs border-collapse">
-                            <thead class="bg-slate-100 font-semibold text-slate-700 uppercase border-b">
-                                <tr>
-                                    <th class="p-2 border-r">Loại Container (Type)</th>
-                                    <th class="p-2 border-r w-24 text-center">Số Lượng (Qty)</th>
-                                    <th class="p-2 border-r">Yêu Cầu Nhiệt Độ / Thông Gió</th>
-                                    <th class="p-2 border-r w-28 text-center">G.W Dự Kiến (KGS)</th>
-                                    <th class="p-2 text-center w-12">Xóa</th>
-                                </tr>
-                            </thead>
-                            <tbody id="bn-table-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Chỉ Dẫn Đặc Biệt Của Hãng Tàu / Chủ Hàng (Special Instructions)</label>
-                    <textarea id="bn-special-instructions" rows="2" class="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-brand outline-none">- VGM & SI Cut-off must be strictly submitted before deadline.
-- Food grade containers required.
-- Free time target at POD: 14 days demurrage/detention.</textarea>
-                </div>
-            </div>
-            <div class="bg-slate-100 p-4 border-t flex justify-end gap-3">
-                <button onclick="closeBookingModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded text-sm font-semibold transition">Hủy</button>
-                <button onclick="generateCustomBookingPDF()" class="px-5 py-2 bg-brand text-white font-bold rounded hover:bg-brand-dark transition text-sm flex items-center gap-2 shadow">
-                    <i class="fa-solid fa-file-pdf"></i> Xuất Booking Note (PDF)
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="bl-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-brand text-white p-4 flex justify-between items-center">
-                <h3 class="font-bold text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-file-contract"></i> Tùy Chỉnh Vận Đơn Đường Biển (Bill of Lading - B/L)
-                </h3>
-                <button onclick="closeBLModal()" class="text-white/80 hover:text-white text-xl font-bold">&times;</button>
-            </div>
-            <div class="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-3 rounded border border-slate-200">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Số Vận Đơn (B/L No.)</label>
-                        <input type="text" id="bl-number" value="MAEU90823100" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Loại Vận Đơn (B/L Type)</label>
-                        <select id="bl-type" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                            <option value="OCEAN BILL OF LADING">OCEAN BILL OF LADING (Gốc)</option>
-                            <option value="SURRENDERED BILL OF LADING">SURRENDERED B/L</option>
-                            <option value="SEA WAYBILL">SEA WAYBILL</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tên Tàu & Chuyến (Vessel / Voy)</label>
-                        <input type="text" id="bl-vessel" value="MAERSK MC-KINNEY / V.2608E" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">1. Người Gửi Hàng (Shipper)</label>
-                        <textarea id="bl-shipper" rows="3" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">2. Người Nhận Hàng (Consignee)</label>
-                        <textarea id="bl-consignee" rows="3" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">TO THE ORDER OF GLOBAL FOODS IMPORTS INC</textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">3. Bên Được Thông Báo (Notify Party)</label>
-                        <textarea id="bl-notify" rows="3" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none"></textarea>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50 p-3 rounded border border-slate-200">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Số Lượng Bản Vận Đơn Gốc (No. of Original B/Ls)</label>
-                        <input type="text" id="bl-originals" value="THREE (3)" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Thanh Toán Cước Phí (Freight & Charges)</label>
-                        <input type="text" id="bl-freight-payable" value="FREIGHT PREPAID AT HO CHI MINH CITY" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                </div>
-            </div>
-            <div class="bg-slate-100 p-4 border-t flex justify-end gap-3">
-                <button onclick="closeBLModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded text-sm font-semibold transition">Hủy</button>
-                <button onclick="generateCustomBLPDF()" class="px-5 py-2 bg-brand text-white font-bold rounded hover:bg-brand-dark transition text-sm flex items-center gap-2 shadow">
-                    <i class="fa-solid fa-file-pdf"></i> Xuất Bill of Lading (PDF)
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="co-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl mx-4 overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-brand text-white p-4 flex justify-between items-center">
-                <h3 class="font-bold text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-certificate"></i> Tùy Chỉnh Giấy Chứng Nhận Xuất Xứ (C/O)
-                </h3>
-                <button onclick="closeCOModal()" class="text-white/80 hover:text-white text-xl font-bold">&times;</button>
-            </div>
-            <div class="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Số C/O (Reference No.)</label>
-                        <input type="text" id="co-ref-no" value="VN-US 26/08/00189" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Mẫu C/O (Form Type)</label>
-                        <select id="co-form-type" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                            <option value="FORM B (Non-Preferential)">FORM B (Chứng nhận chung)</option>
-                            <option value="FORM B">FORM B</option>
-                            <option value="FORM E">FORM E (ASEAN - China)</option>
-                            <option value="FORM D">FORM D (ATIGA)</option>
-                            <option value="FORM AK">FORM AK (ASEAN - Korea)</option>
-                            <option value="FORM EUR.1">FORM EUR.1 (EVFTA)</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tiêu Chuẩn Xuất Xứ (Origin Criterion)</label>
-                        <input type="text" id="co-criterion" value="WO (Wholly Obtained)" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Cơ Quan Cấp C/O (Issuing Authority)</label>
-                        <input type="text" id="co-authority" value="VIETNAM CHAMBER OF COMMERCE AND INDUSTRY (VCCI)" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                </div>
-            </div>
-            <div class="bg-slate-100 p-4 border-t flex justify-end gap-3">
-                <button onclick="closeCOModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded text-sm font-semibold transition">Hủy</button>
-                <button onclick="generateCustomCOPDF()" class="px-5 py-2 bg-brand text-white font-bold rounded hover:bg-brand-dark transition text-sm flex items-center gap-2 shadow">
-                    <i class="fa-solid fa-file-pdf"></i> Xuất Certificate of Origin (PDF)
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="insurance-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl mx-4 overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-brand text-white p-4 flex justify-between items-center">
-                <h3 class="font-bold text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-shield-halved"></i> Tùy Chỉnh Chứng Thư Bảo Hiểm (Insurance Certificate)
-                </h3>
-                <button onclick="closeInsuranceModal()" class="text-white/80 hover:text-white text-xl font-bold">&times;</button>
-            </div>
-            <div class="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Số Đơn Bảo Hiểm (Policy No.)</label>
-                        <input type="text" id="ins-policy-no" value="BAOVIET-2026-INS-778" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Công Ty Bảo Hiểm (Insurer)</label>
-                        <input type="text" id="ins-company" value="BAO VIET INSURANCE CORPORATION" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Số Tiền Bảo Hiểm (Sum Insured)</label>
-                        <input type="text" id="ins-amount" value="USD 49,500.00 (110% CIF Value)" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Điều Khoản Bảo Hiểm (Conditions of Cover)</label>
-                        <input type="text" id="ins-conditions" value="Institute Cargo Clauses (A) 1/1/82 including War & Strikes" class="w-full p-2 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-brand outline-none">
-                    </div>
-                </div>
-            </div>
-            <div class="bg-slate-100 p-4 border-t flex justify-end gap-3">
-                <button onclick="closeInsuranceModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded text-sm font-semibold transition">Hủy</button>
-                <button onclick="generateCustomInsurancePDF()" class="px-5 py-2 bg-brand text-white font-bold rounded hover:bg-brand-dark transition text-sm flex items-center gap-2 shadow">
-                    <i class="fa-solid fa-file-pdf"></i> Xuất Insurance Certificate (PDF)
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const { jsPDF } = window.jspdf;
-
-        // Tải Font Tiếng Việt Roboto để sửa lỗi hiển thị Tiếng Việt trong jsPDF
-        let robotoRegularBase64 = "";
-        let robotoBoldBase64 = "";
-
-        async function fetchFonts() {
-            try {
-                const resReg = await fetch("https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf");
-                const blobReg = await resReg.blob();
-                robotoRegularBase64 = await blobToBase64(blobReg);
-
-                const resBold = await fetch("https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf");
-                const blobBold = await resBold.blob();
-                robotoBoldBase64 = await blobToBase64(blobBold);
-            } catch (e) {
-                console.warn("Chưa tải được font bổ trợ, sử dụng font chuẩn.", e);
-            }
-        }
-
-        function blobToBase64(blob) {
-            return new Promise((resolve, _) => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    const base64data = reader.result.split(',')[1];
-                    resolve(base64data);
-                };
-                reader.readAsDataURL(blob);
-            });
-        }
-
-        fetchFonts();
-
-        function switchTab(tab) {
-            document.getElementById('module-generator').classList.add('hidden');
-            document.getElementById('module-info').classList.add('hidden');
-            
-            document.getElementById('tab-gen').classList.remove('active-tab', 'text-brand');
-            document.getElementById('tab-info').classList.remove('active-tab', 'text-brand');
-            
-            document.getElementById('tab-gen').classList.add('text-slate-500');
-            document.getElementById('tab-info').classList.add('text-slate-500');
-
-            if(tab === 'gen') {
-                document.getElementById('module-generator').classList.remove('hidden');
-                document.getElementById('tab-gen').classList.add('active-tab');
-                document.getElementById('tab-gen').classList.remove('text-slate-500');
-            } else {
-                document.getElementById('module-info').classList.remove('hidden');
-                document.getElementById('tab-info').classList.add('active-tab');
-                document.getElementById('tab-info').classList.remove('text-slate-500');
-            }
-        }
-
-        // Tạo instance jsPDF với font cấu hình
-        function createPdfInstance() {
-            const doc = new jsPDF();
-            if (robotoRegularBase64 && robotoBoldBase64) {
-                doc.addFileToVFS("Roboto-Regular.ttf", robotoRegularBase64);
-                doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
-                doc.addFileToVFS("Roboto-Bold.ttf", robotoBoldBase64);
-                doc.addFont("Roboto-Bold.ttf", "Roboto", "bold");
-                doc.setFont("Roboto", "normal");
-            } else {
-                doc.setFont("helvetica", "normal");
-            }
-            return doc;
-        }
-
-        // Cấu hình chuẩn Header bài làm của Sinh viên
-        function addStudentHeader(doc) {
-            const name = document.getElementById('student-name').value.trim();
-            const id = document.getElementById('student-id').value.trim();
-            
-            let headerText = "";
-            if (name || id) {
-                headerText = `BÀI LÀM SINH VIÊN: ${name.toUpperCase()} - MSSV: ${id.toUpperCase()}`;
-            } else {
-                headerText = `BÀI LÀM SINH VIÊN: (Chưa nhập thông tin sinh viên)`;
-            }
-
-            const totalPages = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= totalPages; i++) {
-                doc.setPage(i);
-                doc.setFontSize(8);
-                doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-                doc.setTextColor(100, 116, 139);
-                
-                // Khung Header
-                doc.setDrawColor(203, 213, 225);
-                doc.setFillColor(248, 250, 252);
-                doc.rect(10, 6, 190, 8, 'FD');
-                
-                doc.text(headerText, 14, 11.5);
-                doc.text(`Trang ${i}/${totalPages}`, 196, 11.5, { align: 'right' });
-            }
-            doc.setTextColor(0, 0, 0);
-        }
-
-        // ==================== 1. MODAL SALES CONTRACT ====================
-        function openContractModal() {
-            document.getElementById('sc-contract-no').value = document.getElementById('m-contract').value;
-            document.getElementById('sc-seller').value = document.getElementById('m-exporter').value;
-            document.getElementById('sc-buyer').value = document.getElementById('m-importer').value;
-            document.getElementById('sc-commodity').value = document.getElementById('m-commodity').value;
-            document.getElementById('sc-quantity').value = document.getElementById('m-qty').value;
-            
-            const total = parseFloat(document.getElementById('m-amount').value) || 0;
-            document.getElementById('sc-total-amount').value = `USD ${total.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-
-            document.getElementById('contract-modal').classList.remove('hidden');
-        }
-
-        function closeContractModal() {
-            document.getElementById('contract-modal').classList.add('hidden');
-        }
-
-        function generateCustomContractPDF() {
-            const doc = createPdfInstance();
-            let y = 22;
-
-            doc.setFontSize(15);
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text("SALES CONTRACT", 105, y, { align: "center" });
-            
-            y += 7;
-            doc.setFontSize(9);
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            doc.text(`Contract No: ${document.getElementById('sc-contract-no').value}`, 14, y);
-            doc.text(`Date: ${document.getElementById('sc-date').value}`, 196, y, { align: "right" });
-            
-            y += 5;
-            doc.text(`Place of Issue: ${document.getElementById('sc-place').value}`, 14, y);
-            
-            y += 6;
-            doc.setDrawColor(180, 180, 180);
-            doc.line(14, y, 196, y);
-            y += 6;
-
-            // Bên Bán & Bên Mua
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text("THE SELLER (PARTY A):", 14, y);
-            doc.text("THE BUYER (PARTY B):", 110, y);
-            
-            y += 5;
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            
-            const sellerLines = doc.splitTextToSize(document.getElementById('sc-seller').value, 82);
-            const buyerLines = doc.splitTextToSize(document.getElementById('sc-buyer').value, 82);
-            
-            doc.text(sellerLines, 14, y);
-            doc.text(buyerLines, 110, y);
-            
-            y += Math.max(sellerLines.length, buyerLines.length) * 4.5 + 6;
-
-            // Cấu trúc các điều khoản hợp đồng
-            const terms = [
-                { title: "ARTICLE 1: COMMODITY & SPECIFICATION", content: document.getElementById('sc-commodity').value },
-                { title: "ARTICLE 2: QUANTITY", content: document.getElementById('sc-quantity').value },
-                { title: "ARTICLE 3: UNIT PRICE", content: document.getElementById('sc-unit-price').value },
-                { title: "ARTICLE 4: TOTAL AMOUNT", content: document.getElementById('sc-total-amount').value },
-                { title: "ARTICLE 5: PACKING & MARKING", content: document.getElementById('sc-packing').value },
-                { title: "ARTICLE 6: SHIPMENT & DELIVERY", content: document.getElementById('sc-shipment').value },
-                { title: "ARTICLE 7: PAYMENT TERMS", content: document.getElementById('sc-payment').value },
-                { title: "ARTICLE 8: INSURANCE", content: document.getElementById('sc-insurance').value },
-                { title: "ARTICLE 9: ARBITRATION & GOVERNING LAW", content: document.getElementById('sc-arbitration').value }
-            ];
-
-            terms.forEach(t => {
-                const lines = doc.splitTextToSize(t.content, 182);
-                const blockHeight = 6 + (lines.length * 4.5);
-                
-                if (y + blockHeight > 275) {
-                    doc.addPage();
-                    y = 22;
-                }
-
-                doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-                doc.text(t.title, 14, y);
-                y += 4.5;
-
-                doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-                doc.text(lines, 14, y);
-                y += (lines.length * 4.5) + 3;
-            });
-
-            // Chữ ký
-            if (y + 35 > 275) {
-                doc.addPage();
-                y = 22;
-            } else {
-                y += 6;
-            }
-
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text("FOR AND ON BEHALF OF SELLER", 30, y);
-            doc.text("FOR AND ON BEHALF OF BUYER", 130, y);
-            
-            y += 20;
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            doc.text("(Authorized Signature & Stamp)", 30, y);
-            doc.text("(Authorized Signature & Stamp)", 130, y);
-
-            addStudentHeader(doc);
-            doc.save(`Sales_Contract_${document.getElementById('sc-contract-no').value}.pdf`);
-            closeContractModal();
-        }
-
-        // ==================== 2. MODAL INVOICE ====================
-        function openInvoiceModal() {
-            document.getElementById('inv-preview-contract').innerText = document.getElementById('m-contract').value;
-            document.getElementById('inv-preview-exporter').innerText = document.getElementById('m-exporter').value.split('\n')[0];
-            document.getElementById('inv-preview-importer').innerText = document.getElementById('m-importer').value.split('\n')[0];
-            document.getElementById('inv-preview-commodity').innerText = document.getElementById('m-commodity').value;
-            document.getElementById('inv-preview-amount').innerText = parseFloat(document.getElementById('m-amount').value).toLocaleString('en-US');
-
-            document.getElementById('invoice-modal').classList.remove('hidden');
-        }
-
-        function closeInvoiceModal() {
-            document.getElementById('invoice-modal').classList.add('hidden');
-        }
-
-        function generateCustomInvoicePDF() {
-            const doc = createPdfInstance();
-            let y = 22;
-
-            doc.setFontSize(16);
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text("COMMERCIAL INVOICE", 105, y, { align: "center" });
-            
-            y += 8;
-            doc.setFontSize(9);
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            
-            doc.text(`Invoice No: INV-${document.getElementById('m-contract').value}`, 14, y);
-            doc.text(`Date: ${new Date().toLocaleDateString('en-GB')}`, 196, y, { align: "right" });
-            
-            y += 5;
-            doc.text(`Contract No: ${document.getElementById('m-contract').value}`, 14, y);
-
-            y += 6;
-            doc.setDrawColor(180, 180, 180);
-            doc.line(14, y, 196, y);
-            y += 6;
-
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text("EXPORTER / SHIPPER:", 14, y);
-            doc.text("IMPORTER / CONSIGNEE:", 110, y);
-            
-            y += 5;
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            const expLines = doc.splitTextToSize(document.getElementById('m-exporter').value, 82);
-            const impLines = doc.splitTextToSize(document.getElementById('m-importer').value, 82);
-            doc.text(expLines, 14, y);
-            doc.text(impLines, 110, y);
-            
-            y += Math.max(expLines.length, impLines.length) * 4.5 + 6;
-
-            // Bảng mặt hàng
-            const qty = document.getElementById('m-qty').value;
-            const amount = parseFloat(document.getElementById('m-amount').value) || 0;
-            
-            doc.autoTable({
-                startY: y,
-                head: [['Description of Goods', 'HS Code', 'Quantity', 'Amount (USD)']],
-                body: [
-                    [
-                        document.getElementById('m-commodity').value,
-                        document.getElementById('m-hscode').value,
-                        qty,
-                        `$${amount.toLocaleString('en-US', {minimumFractionDigits: 2})}`
-                    ]
-                ],
-                foot: [['TOTAL', '', '', `$${amount.toLocaleString('en-US', {minimumFractionDigits: 2})}`]],
-                styles: { font: robotoRegularBase64 ? "Roboto" : "helvetica", fontSize: 8.5 },
-                headStyles: { fillColor: [2, 132, 199], textColor: [255, 255, 255] },
-                margin: { left: 14, right: 14 }
-            });
-
-            y = doc.lastAutoTable.finalY + 8;
-
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text("TERMS & CONDITIONS:", 14, y);
-            y += 5;
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            doc.text(`Incoterms: ${document.getElementById('m-incoterm').value}`, 14, y); y += 4.5;
-            doc.text(`Payment Terms: ${document.getElementById('inv-payment-terms').value}`, 14, y); y += 4.5;
-            doc.text(`Bank Details: ${document.getElementById('inv-bank-details').value}`, 14, y); y += 4.5;
-
-            const extraLines = doc.splitTextToSize(`Notes: ${document.getElementById('inv-extra-terms').value}`, 182);
-            doc.text(extraLines, 14, y);
-
-            addStudentHeader(doc);
-            doc.save(`Commercial_Invoice_${document.getElementById('m-contract').value}.pdf`);
-            closeInvoiceModal();
-        }
-
-        // ==================== 3. MODAL PACKING LIST ====================
-        let plRows = [
-            { cont: "MSKU1234567 / SEAL001", desc: "COFFEE BEANS GRADE 1 IN JUTE BAGS", pkgs: "150 BAGS", nw: "9,000 KGS", gw: "9,600 KGS", cbm: "18.5" },
-            { cont: "MSKU7654321 / SEAL002", desc: "COFFEE BEANS GRADE 1 IN JUTE BAGS", pkgs: "150 BAGS", nw: "9,000 KGS", gw: "9,600 KGS", cbm: "18.5" }
-        ];
-
-        function openPackingListModal() {
-            document.getElementById('pl-preview-contract').innerText = document.getElementById('m-contract').value;
-            document.getElementById('pl-preview-route').innerText = `${document.getElementById('m-pol').value} -> ${document.getElementById('m-pod').value}`;
-            document.getElementById('pl-preview-exporter').innerText = document.getElementById('m-exporter').value.split('\n')[0];
-            document.getElementById('pl-preview-importer').innerText = document.getElementById('m-importer').value.split('\n')[0];
-
-            renderPackingTable();
-            document.getElementById('packing-modal').classList.remove('hidden');
-        }
-
-        function closePackingListModal() {
-            document.getElementById('packing-modal').classList.add('hidden');
-        }
-
-        function renderPackingTable() {
-            const tbody = document.getElementById('pl-table-body');
-            tbody.innerHTML = '';
-            plRows.forEach((row, index) => {
-                tbody.innerHTML += `
-                    <tr class="border-b hover:bg-slate-50">
-                        <td class="p-1.5 border-r"><input type="text" value="${row.cont}" onchange="plRows[${index}].cont=this.value" class="w-full p-1 border rounded text-xs"></td>
-                        <td class="p-1.5 border-r"><input type="text" value="${row.desc}" onchange="plRows[${index}].desc=this.value" class="w-full p-1 border rounded text-xs"></td>
-                        <td class="p-1.5 border-r"><input type="text" value="${row.pkgs}" onchange="plRows[${index}].pkgs=this.value" class="w-full p-1 border rounded text-xs text-center"></td>
-                        <td class="p-1.5 border-r"><input type="text" value="${row.nw}" onchange="plRows[${index}].nw=this.value" class="w-full p-1 border rounded text-xs text-center"></td>
-                        <td class="p-1.5 border-r"><input type="text" value="${row.gw}" onchange="plRows[${index}].gw=this.value" class="w-full p-1 border rounded text-xs text-center"></td>
-                        <td class="p-1.5 border-r"><input type="text" value="${row.cbm}" onchange="plRows[${index}].cbm=this.value" class="w-full p-1 border rounded text-xs text-center"></td>
-                        <td class="p-1.5 text-center"><button onclick="removePackingRow(${index})" class="text-red-500 hover:text-red-700 font-bold">&times;</button></td>
-                    </tr>
-                `;
-            });
-        }
-
-        function addPackingRow() {
-            plRows.push({ cont: "", desc: "", pkgs: "", nw: "", gw: "", cbm: "" });
-            renderPackingTable();
-        }
-
-        function removePackingRow(index) {
-            plRows.splice(index, 1);
-            renderPackingTable();
-        }
-
-        function generateCustomPackingListPDF() {
-            const doc = createPdfInstance();
-            let y = 22;
-
-            doc.setFontSize(16);
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text("DETAILED PACKING LIST", 105, y, { align: "center" });
-
-            y += 8;
-            doc.setFontSize(9);
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            doc.text(`PKL No: PL-${document.getElementById('m-contract').value}`, 14, y);
-            doc.text(`Date: ${new Date().toLocaleDateString('en-GB')}`, 196, y, { align: "right" });
-
-            y += 6;
-            doc.setDrawColor(180, 180, 180);
-            doc.line(14, y, 196, y);
-            y += 6;
-
-            const body = plRows.map(r => [r.cont, r.desc, r.pkgs, r.nw, r.gw, r.cbm]);
-
-            doc.autoTable({
-                startY: y,
-                head: [['Cont/Seal No.', 'Description', 'Packages', 'N.W (KGS)', 'G.W (KGS)', 'CBM']],
-                body: body,
-                styles: { font: robotoRegularBase64 ? "Roboto" : "helvetica", fontSize: 8.5 },
-                headStyles: { fillColor: [2, 132, 199], textColor: [255, 255, 255] },
-                margin: { left: 14, right: 14 }
-            });
-
-            y = doc.lastAutoTable.finalY + 8;
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text("SHIPPING MARKS & NOTES:", 14, y);
-            y += 5;
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            const markLines = doc.splitTextToSize(document.getElementById('pl-shipping-marks').value, 182);
-            doc.text(markLines, 14, y);
-
-            addStudentHeader(doc);
-            doc.save(`Packing_List_${document.getElementById('m-contract').value}.pdf`);
-            closePackingListModal();
-        }
-
-        // ==================== 4. MODAL BOOKING NOTE ====================
-        let bookingRows = [
-            { type: "40ft High Cube (40'HC)", qty: "1 FCL", req: "Dry Container, Clean, Odorless", gw: document.getElementById('m-gw').value + " KGS" }
-        ];
-
-        function openBookingModal() {
-            renderBookingTable();
-            document.getElementById('booking-modal').classList.remove('hidden');
-        }
-
-        function closeBookingModal() {
-            document.getElementById('booking-modal').classList.add('hidden');
-        }
-
-        function renderBookingTable() {
-            const tbody = document.getElementById('bn-table-body');
-            tbody.innerHTML = '';
-            bookingRows.forEach((row, index) => {
-                tbody.innerHTML += `
-                    <tr class="border-b hover:bg-slate-50">
-                        <td class="p-1.5 border-r"><input type="text" value="${row.type}" onchange="bookingRows[${index}].type=this.value" class="w-full p-1 border rounded text-xs"></td>
-                        <td class="p-1.5 border-r"><input type="text" value="${row.qty}" onchange="bookingRows[${index}].qty=this.value" class="w-full p-1 border rounded text-xs text-center"></td>
-                        <td class="p-1.5 border-r"><input type="text" value="${row.req}" onchange="bookingRows[${index}].req=this.value" class="w-full p-1 border rounded text-xs"></td>
-                        <td class="p-1.5 border-r"><input type="text" value="${row.gw}" onchange="bookingRows[${index}].gw=this.value" class="w-full p-1 border rounded text-xs text-center"></td>
-                        <td class="p-1.5 text-center"><button onclick="removeBookingRow(${index})" class="text-red-500 hover:text-red-700 font-bold">&times;</button></td>
-                    </tr>
-                `;
-            });
-        }
-
-        function addBookingRow() {
-            bookingRows.push({ type: "", qty: "", req: "", gw: "" });
-            renderBookingTable();
-        }
-
-        function removeBookingRow(index) {
-            bookingRows.splice(index, 1);
-            renderBookingTable();
-        }
-
-        function generateCustomBookingPDF() {
-            const doc = createPdfInstance();
-            let y = 22;
-
-            doc.setFontSize(16);
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text("BOOKING CONFIRMATION / NOTE", 105, y, { align: "center" });
-
-            y += 8;
-            doc.setFontSize(9);
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            doc.text(`Booking No: ${document.getElementById('bn-booking-no').value}`, 14, y);
-            doc.text(`Carrier: ${document.getElementById('bn-carrier').value}`, 196, y, { align: "right" });
-
-            y += 5;
-            doc.text(`Vessel/Voyage: ${document.getElementById('bn-vessel').value}`, 14, y);
-            doc.text(`ETD: ${document.getElementById('bn-etd').value}`, 196, y, { align: "right" });
-
-            y += 6;
-            doc.setDrawColor(180, 180, 180);
-            doc.line(14, y, 196, y);
-            y += 6;
-
-            const body = bookingRows.map(r => [r.type, r.qty, r.req, r.gw]);
-
-            doc.autoTable({
-                startY: y,
-                head: [['Container Type', 'Quantity', 'Requirements', 'Est. G.W']],
-                body: body,
-                styles: { font: robotoRegularBase64 ? "Roboto" : "helvetica", fontSize: 8.5 },
-                headStyles: { fillColor: [2, 132, 199], textColor: [255, 255, 255] },
-                margin: { left: 14, right: 14 }
-            });
-
-            y = doc.lastAutoTable.finalY + 8;
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text("CUT-OFF TIMES & INSTRUCTIONS:", 14, y);
-            y += 5;
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            doc.text(`SI Cut-off: ${document.getElementById('bn-si-cutoff').value}`, 14, y); y += 4.5;
-            doc.text(`CY Cut-off: ${document.getElementById('bn-cy-cutoff').value}`, 14, y); y += 4.5;
-            doc.text(`Empty Depot: ${document.getElementById('bn-empty-depot').value}`, 14, y); y += 4.5;
-            doc.text(`Return Yard: ${document.getElementById('bn-return-yard').value}`, 14, y); y += 4.5;
-
-            const instLines = doc.splitTextToSize(`Special Instructions:\n${document.getElementById('bn-special-instructions').value}`, 182);
-            doc.text(instLines, 14, y);
-
-            addStudentHeader(doc);
-            doc.save(`Booking_Note_${document.getElementById('bn-booking-no').value}.pdf`);
-            closeBookingModal();
-        }
-
-        // ==================== 5. MODAL BILL OF LADING ====================
-        function openBLModal() {
-            document.getElementById('bl-shipper').value = document.getElementById('m-exporter').value;
-            document.getElementById('bl-notify').value = document.getElementById('m-importer').value;
-            document.getElementById('bl-modal').classList.remove('hidden');
-        }
-
-        function closeBLModal() {
-            document.getElementById('bl-modal').classList.add('hidden');
-        }
-
-        function generateCustomBLPDF() {
-            const doc = createPdfInstance();
-            let y = 22;
-
-            doc.setFontSize(15);
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text(document.getElementById('bl-type').value, 105, y, { align: "center" });
-
-            y += 7;
-            doc.setFontSize(9);
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            doc.text(`B/L No: ${document.getElementById('bl-number').value}`, 14, y);
-            doc.text(`Vessel/Voy: ${document.getElementById('bl-vessel').value}`, 196, y, { align: "right" });
-
-            y += 6;
-            doc.setDrawColor(180, 180, 180);
-            doc.line(14, y, 196, y);
-            y += 6;
-
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text("SHIPPER:", 14, y);
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            const shpLines = doc.splitTextToSize(document.getElementById('bl-shipper').value, 182);
-            doc.text(shpLines, 14, y + 4.5);
-            y += (shpLines.length * 4.5) + 6;
-
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text("CONSIGNEE:", 14, y);
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            const csgLines = doc.splitTextToSize(document.getElementById('bl-consignee').value, 182);
-            doc.text(csgLines, 14, y + 4.5);
-            y += (csgLines.length * 4.5) + 6;
-
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text("NOTIFY PARTY:", 14, y);
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            const ntfLines = doc.splitTextToSize(document.getElementById('bl-notify').value, 182);
-            doc.text(ntfLines, 14, y + 4.5);
-            y += (ntfLines.length * 4.5) + 6;
-
-            doc.autoTable({
-                startY: y,
-                head: [['Port of Loading', 'Port of Discharge', 'Freight Terms', 'No. of Originals']],
-                body: [[
-                    document.getElementById('m-pol').value,
-                    document.getElementById('m-pod').value,
-                    document.getElementById('bl-freight-payable').value,
-                    document.getElementById('bl-originals').value
-                ]],
-                styles: { font: robotoRegularBase64 ? "Roboto" : "helvetica", fontSize: 8.5 },
-                headStyles: { fillColor: [2, 132, 199], textColor: [255, 255, 255] },
-                margin: { left: 14, right: 14 }
-            });
-
-            addStudentHeader(doc);
-            doc.save(`Bill_of_Lading_${document.getElementById('bl-number').value}.pdf`);
-            closeBLModal();
-        }
-
-        // ==================== 6. MODAL CERTIFICATE OF ORIGIN ====================
-        function openCOModal() {
-            document.getElementById('co-modal').classList.remove('hidden');
-        }
-
-        function closeCOModal() {
-            document.getElementById('co-modal').classList.add('hidden');
-        }
-
-        function generateCustomCOPDF() {
-            const doc = createPdfInstance();
-            let y = 22;
-
-            doc.setFontSize(15);
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text("CERTIFICATE OF ORIGIN", 105, y, { align: "center" });
-            doc.setFontSize(10);
-            doc.text(document.getElementById('co-form-type').value, 105, y + 6, { align: "center" });
-
-            y += 15;
-            doc.setFontSize(9);
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            doc.text(`Reference No: ${document.getElementById('co-ref-no').value}`, 14, y);
-            doc.text(`Issuing Authority: ${document.getElementById('co-authority').value}`, 14, y + 5);
-
-            y += 12;
-            doc.setDrawColor(180, 180, 180);
-            doc.line(14, y, 196, y);
-            y += 6;
-
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text("EXPORTER / PRODUCER:", 14, y);
-            doc.text("CONSIGNEE:", 110, y);
-
-            y += 5;
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            const expLines = doc.splitTextToSize(document.getElementById('m-exporter').value, 82);
-            const impLines = doc.splitTextToSize(document.getElementById('m-importer').value, 82);
-            doc.text(expLines, 14, y);
-            doc.text(impLines, 110, y);
-
-            y += Math.max(expLines.length, impLines.length) * 4.5 + 6;
-
-            doc.autoTable({
-                startY: y,
-                head: [['Item & Description', 'HS Code', 'Origin Criterion', 'G.W (KGS)']],
-                body: [[
-                    document.getElementById('m-commodity').value,
-                    document.getElementById('m-hscode').value,
-                    document.getElementById('co-criterion').value,
-                    document.getElementById('m-gw').value
-                ]],
-                styles: { font: robotoRegularBase64 ? "Roboto" : "helvetica", fontSize: 8.5 },
-                headStyles: { fillColor: [2, 132, 199], textColor: [255, 255, 255] },
-                margin: { left: 14, right: 14 }
-            });
-
-            addStudentHeader(doc);
-            doc.save(`Certificate_of_Origin_${document.getElementById('co-ref-no').value}.pdf`);
-            closeCOModal();
-        }
-
-        // ==================== 7. MODAL INSURANCE CERTIFICATE ====================
-        function openInsuranceModal() {
-            document.getElementById('insurance-modal').classList.remove('hidden');
-        }
-
-        function closeInsuranceModal() {
-            document.getElementById('insurance-modal').classList.add('hidden');
-        }
-
-        function generateCustomInsurancePDF() {
-            const doc = createPdfInstance();
-            let y = 22;
-
-            doc.setFontSize(15);
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text("CERTIFICATE OF INSURANCE", 105, y, { align: "center" });
-
-            y += 8;
-            doc.setFontSize(9);
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            doc.text(`Policy No: ${document.getElementById('ins-policy-no').value}`, 14, y);
-            doc.text(`Insurer: ${document.getElementById('ins-company').value}`, 196, y, { align: "right" });
-
-            y += 6;
-            doc.setDrawColor(180, 180, 180);
-            doc.line(14, y, 196, y);
-            y += 6;
-
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "bold");
-            doc.text("INSURED / APPLICANT:", 14, y);
-            y += 5;
-            doc.setFont(robotoRegularBase64 ? "Roboto" : "helvetica", "normal");
-            const expLines = doc.splitTextToSize(document.getElementById('m-exporter').value, 182);
-            doc.text(expLines, 14, y);
-            y += (expLines.length * 4.5) + 5;
-
-            doc.text(`Sum Insured: ${document.getElementById('ins-amount').value}`, 14, y); y += 5;
-            doc.text(`Conditions of Cover: ${document.getElementById('ins-conditions').value}`, 14, y); y += 5;
-            doc.text(`Voyage: From ${document.getElementById('m-pol').value} to ${document.getElementById('m-pod').value}`, 14, y); y += 8;
-
-            const goodsLines = doc.splitTextToSize(`Goods Description: ${document.getElementById('m-commodity').value}`, 182);
-            doc.text(goodsLines, 14, y);
-
-            addStudentHeader(doc);
-            doc.save(`Insurance_Certificate_${document.getElementById('ins-policy-no').value}.pdf`);
-            closeInsuranceModal();
-        }
-
-        // ==================== TẢI TOÀN BỘ BỘ CHỨNG TỪ (PDF) ====================
-        function generateAllPDFs() {
-            alert("Hệ thống chuẩn bị xuất trọn bộ 7 chứng từ tiêu chuẩn (Hợp đồng, Invoice, Packing List, Booking, Bill of Lading, C/O, Insurance). Vui lòng xác nhận tải xuống.");
-            
-            openContractModal(); generateCustomContractPDF();
-            setTimeout(() => { openInvoiceModal(); generateCustomInvoicePDF(); }, 400);
-            setTimeout(() => { openPackingListModal(); generateCustomPackingListPDF(); }, 800);
-            setTimeout(() => { openBookingModal(); generateCustomBookingPDF(); }, 1200);
-            setTimeout(() => { openBLModal(); generateCustomBLPDF(); }, 1600);
-            setTimeout(() => { openCOModal(); generateCustomCOPDF(); }, 2000);
-            setTimeout(() => { openInsuranceModal(); generateCustomInsurancePDF(); }, 2400);
-        }
-    </script>
-</body>
-</html>
+<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TradeDoc Pro - Tạo bộ chứng từ ngoại thương</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
+body{display:flex;flex-direction:column;height:100vh;background:#e8f4f8;color:#263238}
+header{background:#fff9e6;border-bottom:3px solid #ffe082;padding:8px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+header h1{font-size:17px;color:#01579b}
+.btn{border:0;border-radius:6px;padding:9px 14px;font-weight:600;font-size:14px;cursor:pointer;background:#b3e5fc;color:#01579b}
+.btn:hover{background:#81d4fa}.btn.red{background:#ff0033;color:#fff}.btn.red:hover{background:#d50000}
+.wrap{flex:1;display:flex;min-height:0}
+#form{width:430px;max-width:100%;overflow-y:auto;padding:12px;background:#fff;border-right:2px solid #b3e5fc}
+details{margin-bottom:10px;border:1px solid #b3e5fc;border-radius:8px;overflow:hidden}
+summary{cursor:pointer;padding:10px 12px;background:#e8f4f8;font-weight:700;color:#01579b;font-size:14px}
+.grp{padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f{display:flex;flex-direction:column;gap:3px}.f.w{grid-column:1/-1}
+label{font-size:12.5px;font-weight:600;color:#37474f}
+input,textarea,select{width:100%;padding:8px 9px;border:1.5px solid #b0bec5;border-radius:6px;font-size:14px;background:#fffdf5}
+input:focus,textarea:focus,select:focus{outline:none;border-color:#0288d1;box-shadow:0 0 0 3px #b3e5fc}
+textarea{resize:vertical;min-height:62px;line-height:1.4}
+.calc{grid-column:1/-1;background:#fff9e6;border:1px dashed #ffb300;border-radius:6px;padding:8px 10px;font-size:13px}
+#pv{flex:1;display:flex;flex-direction:column;min-width:0}
+#tabs{display:flex;gap:6px;padding:8px;background:#fff9e6;overflow-x:auto;border-bottom:1px solid #ffe082;align-items:center}
+#tabs .btn{white-space:nowrap;padding:7px 11px;font-size:13px}#tabs .btn.on{background:#0288d1;color:#fff}
+#scroll{flex:1;overflow:auto;padding:16px;background:#cfd8dc}
+.doc{width:794px;margin:0 auto;background:#fff;padding:14mm 14mm;font:13px/1.5 'Times New Roman',serif;color:#000;box-shadow:0 2px 10px #0004}
+.doc .stu{font:bold 11px Arial;border:1px solid #000;text-align:center;padding:3px;margin-bottom:10px}
+.doc h2{text-align:center;font-size:20px;margin:6px 0 2px;text-transform:uppercase}.doc .sub{text-align:center;margin-bottom:10px}
+.doc table{width:100%;border-collapse:collapse;margin:6px 0}
+.doc td,.doc th{border:1px solid #000;padding:5px 6px;vertical-align:top;font-size:12.5px}.doc th{background:#eee}
+.doc .nb td{border:0;padding:2px 4px}
+.doc .bx{border:1px solid #000;padding:6px;min-height:60px}.doc .bx b{display:block;font-size:11px;text-transform:uppercase}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:0}.g2>.bx{margin:-1px 0 0 -1px}
+.doc .art{margin:8px 0;page-break-inside:avoid}.doc .sig{display:flex;justify-content:space-around;margin-top:30px;text-align:center;page-break-inside:avoid}
+.doc .sig div{width:40%;min-height:100px}.r{text-align:right}
+@media(max-width:900px){.wrap{flex-direction:column}#form{width:100%;max-height:50%}.doc{zoom:.45}}
+#modal{position:fixed;inset:0;background:#0008;z-index:50;display:none;align-items:center;justify-content:center}
+.mbox{background:#fff;width:min(960px,96vw);height:90vh;border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
+.mhead{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;background:#fff9e6;border-bottom:2px solid #ffe082;flex-wrap:wrap}
+#mtabs{display:flex;gap:6px;padding:8px;background:#e8f4f8;overflow-x:auto}#mtabs .btn{white-space:nowrap;padding:7px 11px;font-size:13px}#mtabs .btn.on{background:#0288d1;color:#fff}
+#mbody{flex:1;overflow:auto;padding:16px}
+.gd{max-width:760px;margin:auto;line-height:1.6;font-size:14.5px}.gd h3{color:#01579b;margin:16px 0 6px}.gd li{margin-left:22px}.gd .tip{background:#fff9e6;border-left:4px solid #ffb300;padding:8px 12px;margin-top:10px}
+@media(max-width:900px){#mbody .doc{zoom:.45}}
+footer{background:#fff9e6;border-top:2px solid #ffe082;padding:7px 14px;text-align:center;font-size:12.5px;color:#01579b;line-height:1.6}
+footer a{color:#0277bd;font-weight:600;text-decoration:none}footer a:hover{text-decoration:underline}
+footer .sep{margin:0 8px;color:#ffb300}
+@media(max-width:700px){footer .sep{display:none}footer span{display:block}}
+</style></head><body>
+<header><h1>📑 TradeDoc Pro – Tạo bộ chứng từ ngoại thương</h1>
+<div><button class="btn" onclick="newDocs()">➕ Tạo mới chứng từ</button> <button class="btn" onclick="openSample()">📄 Chứng từ mẫu</button> <button class="btn" onclick="openGuide()">❓ Hướng dẫn</button> <button class="btn" onclick="pdfOne()">Xuất PDF chứng từ đang xem</button> <button class="btn red" id="allBtn" onclick="pdfAll()">Tải trọn bộ (7 file PDF riêng)</button></div></header>
+<div class="wrap"><div id="form"></div>
+<div id="pv"><div id="tabs"></div><div id="scroll"><div id="doc"></div></div></div></div>
+<footer><span>© Phần mềm do GV Nguyễn Khánh Dương phát triển</span><span class="sep">|</span><span>Mail: <a href="mailto:nguyenkhanhduong0111@gmail.com">nguyenkhanhduong0111@gmail.com</a></span><span class="sep">|</span><span>Phần mềm phục vụ giảng dạy và học tập</span></footer>
+<div id="modal"><div class="mbox"><div class="mhead"><b id="mtitle"></b><span id="mact"></span><button class="btn" onclick="closeM()">✕ Đóng</button></div><div id="mtabs"></div><div id="mbody"></div></div></div>
+<script>
+let D={sname:'',mssv:'',contractNo:'IMP-2026-EXP-08',date:'2026-07-01',place:'HO CHI MINH CITY, VIETNAM',lc:'',invNo:'INV-2026-0801',
+payment:'By Irrevocable Letter of Credit (L/C) at sight for 100% of total contract value',bank:'JOINT STOCK COMMERCIAL BANK FOR FOREIGN TRADE OF VIETNAM (VIETCOMBANK)\nSWIFT: BFTVVNVX\nA/C No.: 0011001234567',
+exporter:'VIETNAM AGRI-EXPORT CO., LTD\n123 NGUYEN HUE STREET, DISTRICT 1, HO CHI MINH CITY, VIETNAM\nTel: +84 28 3822 0000',
+importer:'GLOBAL FOODS IMPORTS INC\n456 PACIFIC AVENUE, LOS ANGELES, CA 90001, USA\nTel: +1 213 555 0100',notify:'SAME AS CONSIGNEE',
+goods:'VIETNAMESE ROBUSTA COFFEE BEANS GRADE 1, SCREEN 18, MAXIMUM 2% BROKEN, MOISTURE 12.5% MAX',hs:'0901.11.10',origin:'VIETNAM',
+pkgs:300,pack:'JUTE BAGS',perPkg:60,net:18000,gross:18360,unitPrice:2450,cbm:28,marks:'GLOBAL FOODS USA\nPORT OF LOS ANGELES\nMADE IN VIETNAM\nNOS: 1 - 300',
+incoterms:'CIF Los Angeles Port, USA (Incoterms 2020)',pol:'CAT LAI PORT, HO CHI MINH CITY, VIETNAM',pod:'LOS ANGELES PORT, CALIFORNIA, USA',
+vessel:'EVER GLORY',voyage:'V.082E',line:'EVERGREEN MARINE CORP.',bookingNo:'EGLV1426000123',blNo:'EGLV1426000123',etd:'2026-08-15',siCut:'2026-08-10',cyCut:'2026-08-12',
+empty:'ICD TAN CANG SONG THAN',ret:'CAT LAI PORT TERMINAL',contType:'1 x 20\'GP (food grade)',containerNo:'EGHU1234567',seal:'EMCVN123456',freight:'FREIGHT PREPAID',originals:'03 (THREE)',
+coForm:'FORM B',coNo:'B-2026-0001234',criterion:'WO (Wholly obtained)',authority:'VIETNAM CHAMBER OF COMMERCE AND INDUSTRY (VCCI) – HO CHI MINH CITY BRANCH',
+insurer:'BAO VIET INSURANCE CORPORATION',policyNo:'BV-MC-2026-0456',claim:'BAO VIET INSURANCE – 35 HAI BA TRUNG ST., HANOI',cover:'Institute Cargo Clauses (A) 1/1/2009, Institute War Clauses (Cargo), Institute Strikes Clauses (Cargo)'};
+const SAMPLE=JSON.parse(JSON.stringify(D));SAMPLE.sname='NGUYEN VAN A';SAMPLE.mssv='2026000001';
+const G=[['Sinh viên (hiện ở đầu mỗi PDF)',[['sname','Họ và tên'],['mssv','MSSV']]],
+['1. Hợp đồng & thanh toán',[['contractNo','Số hợp đồng'],['date','Ngày ký','date'],['place','Nơi ký','i','w'],['lc','Số L/C (nếu có)'],['invNo','Số hóa đơn'],['payment','Điều khoản thanh toán','t','w'],['bank','Thông tin ngân hàng','t','w']]],
+['2. Các bên',[['exporter','Người xuất khẩu (Seller)','t','w'],['importer','Người nhập khẩu (Buyer)','t','w'],['notify','Bên được thông báo (Notify)','t','w']]],
+['3. Hàng hóa',[['goods','Mô tả hàng hóa','t','w'],['hs','Mã HS'],['origin','Xuất xứ'],['pkgs','Số kiện','number'],['pack','Loại bao bì'],['perPkg','KG tịnh / kiện','number'],['net','Net (KGS)','number'],['gross','Gross (KGS)','number'],['unitPrice','Đơn giá (USD/MT)','number'],['cbm','Thể tích (CBM)','number'],['marks','Shipping marks','t','w'],['_calc']]],
+['4. Vận chuyển',[['incoterms','Incoterms','i','w'],['pol','Cảng đi (POL)','i','w'],['pod','Cảng đến (POD)','i','w'],['vessel','Tên tàu'],['voyage','Chuyến'],['line','Hãng tàu','i','w'],['bookingNo','Booking No.'],['blNo','B/L No.'],['etd','ETD','date'],['siCut','SI Cut-off','date'],['cyCut','CY Cut-off','date'],['freight','Cước phí','s',0,['FREIGHT PREPAID','FREIGHT COLLECT']],['empty','Lấy cont rỗng','i','w'],['ret','Hạ bãi hàng','i','w'],['contType','Loại / số lượng cont','i','w'],['containerNo','Số container'],['seal','Số seal'],['originals','Số bản B/L gốc']]],
+['5. C/O & Bảo hiểm',[['coForm','Mẫu C/O','s',0,['FORM B','FORM D (ATIGA)','FORM E (ASEAN-China)','FORM AK (ASEAN-Korea)','FORM EUR.1 (EVFTA)']],['coNo','Số C/O'],['criterion','Tiêu chuẩn xuất xứ','i','w'],['authority','Cơ quan cấp C/O','t','w'],['insurer','Công ty bảo hiểm','i','w'],['policyNo','Số đơn bảo hiểm'],['claim','Đại lý giám định / bồi thường','t','w'],['cover','Điều kiện bảo hiểm','t','w']]]];
+const DOT='……………',ee=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>'),e=s=>{if(s===0||s==null||String(s).trim()==='')return DOT;return ee(s)},f=d=>d?d.split('-').reverse().join('/'):'………',
+m=n=>+n?Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'………',k=n=>+n?Number(n).toLocaleString('en-US'):'………';
+const total=()=>D.net/1000*D.unitPrice,ins=()=>total()*1.1;
+function words(n){n=Math.round(n*100);if(!n)return 'SAY: US DOLLARS …………';let c=n%100,i=Math.floor(n/100);const o='ZERO ONE TWO THREE FOUR FIVE SIX SEVEN EIGHT NINE TEN ELEVEN TWELVE THIRTEEN FOURTEEN FIFTEEN SIXTEEN SEVENTEEN EIGHTEEN NINETEEN'.split(' '),t='_ _ TWENTY THIRTY FORTY FIFTY SIXTY SEVENTY EIGHTY NINETY'.split(' ');
+const w=x=>x<20?o[x]:t[Math.floor(x/10)]+(x%10?'-'+o[x%10]:''),h=x=>(x>=100?o[Math.floor(x/100)]+' HUNDRED'+(x%100?' AND ':''):'')+(x%100?w(x%100):'');
+let r=[];[[1e9,'BILLION'],[1e6,'MILLION'],[1e3,'THOUSAND']].forEach(([v,nm])=>{if(i>=v){r.push(h(Math.floor(i/v))+' '+nm);i%=v}});if(i||!r.length)r.push(h(i)||'ZERO');
+return 'SAY: US DOLLARS '+r.join(' ')+(c?' AND '+w(c)+' CENTS':'')+' ONLY.'}
+const bx=(t,c,x='')=>`<div class="bx" style="${x}"><b>${t}</b>${c}</div>`;
+const sig=(a,b)=>`<div class="sig"><div><b>${a}</b><br><br><br><br>(Signed &amp; Stamped)</div>${b?`<div><b>${b}</b><br><br><br><br>(Signed &amp; Stamped)</div>`:''}</div>`;
+const tbl=(h,rows)=>`<table><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</table>`;
+const goodsLine=()=>`${e(D.goods)}<br>HS CODE: ${e(D.hs)} | ORIGIN: ${e(D.origin)}`;
+const DOCS={
+contract:['Hợp đồng ngoại thương',()=>{const A=(t,x)=>`<div class="art"><b>${t}</b><br>${x}</div>`;return `<h2>Sales Contract</h2><div class="sub">No.: <b>${e(D.contractNo)}</b> &nbsp;|&nbsp; Date: ${f(D.date)} &nbsp;|&nbsp; Place: ${e(D.place)}</div>
+<div class="g2">${bx('The Seller (Party A)',e(D.exporter))}${bx('The Buyer (Party B)',e(D.importer))}</div><p style="margin-top:8px">The Seller and the Buyer have agreed to conclude this contract under the following terms and conditions:</p>
+${A('Article 1: Commodity &amp; Specification',goodsLine())}${A('Article 2: Quantity',`${k(D.net)} KGS net (${D.net?D.net/1000:'………'} MT), ±5% at Seller's option. Packing: ${e(D.pkgs)} ${e(D.pack)}.`)}
+${A('Article 3: Unit Price',`USD ${m(D.unitPrice)} per metric ton, ${e(D.incoterms)}.`)}${A('Article 4: Total Amount',`USD ${m(total())}<br>${words(total())}`)}
+${A('Article 5: Packing &amp; Marking',`Packed in new single ${e(D.pack)} of ${k(D.perPkg)} KGS net each. Shipping marks:<br>${e(D.marks)}`)}
+${A('Article 6: Shipment &amp; Delivery',`Time of shipment: ETD ${f(D.etd)}. Port of loading: ${e(D.pol)}. Port of discharge: ${e(D.pod)}. Partial shipment: allowed. Transhipment: not allowed.`)}
+${A('Article 7: Payment',e(D.payment)+(D.lc?`.<br>L/C No.: ${e(D.lc)}`:'')+`<br>Seller's bank:<br>${e(D.bank)}`)}${A('Article 8: Insurance','To be covered by the Seller for 110% of CIF invoice value, All Risks (ICC A).')}
+${A('Article 9: Inspection &amp; Claims','Quality and quantity are certified by a competent surveyor at port of loading. Any claim must be lodged within 30 days after arrival at port of discharge, with supporting documents.')}
+${A('Article 10: Force Majeure','Neither party is liable for failure or delay caused by force majeure events (war, natural disaster, government action). The affected party shall notify the other within 7 days and provide a certificate.')}
+${A('Article 11: Arbitration &amp; Governing Law','Any dispute shall be settled by the Vietnam International Arbitration Centre (VIAC) under its rules. The contract is governed by the CISG and Vietnamese law.')}
+${A('Article 12: General','This contract is made in two originals in English, one for each party, and takes effect from the date of signing.')}${sig('THE SELLER','THE BUYER')}`}],
+invoice:['Commercial Invoice',()=>`<h2>Commercial Invoice</h2><div class="sub">Invoice No.: <b>${e(D.invNo)}</b> &nbsp;|&nbsp; Date: ${f(D.etd)}</div>
+<div class="g2">${bx('Exporter / Seller',e(D.exporter))}${bx('Importer / Buyer',e(D.importer))}${bx('Contract No. / L/C No.',e(D.contractNo)+(D.lc?' / '+e(D.lc):''))}${bx('Terms of delivery &amp; payment',e(D.incoterms)+'<br>'+e(D.payment))}
+${bx('Port of loading',e(D.pol))}${bx('Port of discharge',e(D.pod))}${bx('Vessel / Voyage',e(D.vessel)+' / '+e(D.voyage))}${bx('B/L No. / ETD',e(D.blNo)+' / '+f(D.etd))}</div>
+${tbl(['Marks &amp; Nos.','Description of goods','Quantity (KGS)','Unit price (USD/MT)','Amount (USD)'],[[e(D.marks),goodsLine()+`<br>${k(D.pkgs)} ${e(D.pack)}`,k(D.net),m(D.unitPrice),m(total())],['','<b>TOTAL</b>',k(D.net),'','<b>'+m(total())+'</b>']])}
+<p><b>${words(total())}</b></p><p style="margin-top:6px"><b>Bank details:</b><br>${e(D.bank)}</p>${sig('THE SELLER','')}`],
+packing:['Detailed Packing List',()=>`<h2>Detailed Packing List</h2><div class="sub">Invoice No.: ${e(D.invNo)} &nbsp;|&nbsp; Contract No.: ${e(D.contractNo)} &nbsp;|&nbsp; Date: ${f(D.etd)}</div>
+<div class="g2">${bx('Exporter',e(D.exporter))}${bx('Importer',e(D.importer))}${bx('Vessel / Voyage',e(D.vessel)+' / '+e(D.voyage))}${bx('From → To',e(D.pol)+'<br>→ '+e(D.pod))}</div>
+${tbl(['Container / Seal','Description','Packages','N.W (KGS)','G.W (KGS)','CBM'],[[e(D.containerNo)+'<br>Seal: '+e(D.seal)+'<br>'+e(D.contType),goodsLine(),k(D.pkgs)+' '+e(D.pack)+'<br>('+k(D.perPkg)+' KGS/each)',k(D.net),k(D.gross),m(D.cbm)],['','<b>TOTAL</b>',k(D.pkgs),k(D.net),k(D.gross),m(D.cbm)]])}
+<p><b>Marks &amp; Numbers:</b><br>${e(D.marks)}</p>${sig('THE SELLER','')}`],
+booking:['Booking Note',()=>`<h2>Booking Note</h2><div class="sub">Booking No.: <b>${e(D.bookingNo)}</b> &nbsp;|&nbsp; Carrier: ${e(D.line)}</div>
+<div class="g2">${bx('Shipper',e(D.exporter))}${bx('Consignee',e(D.importer))}${bx('Vessel / Voyage',e(D.vessel)+' / '+e(D.voyage))}${bx('ETD',f(D.etd))}${bx('Port of loading',e(D.pol))}${bx('Port of discharge',e(D.pod))}${bx('SI cut-off',f(D.siCut))}${bx('CY cut-off',f(D.cyCut))}${bx('Empty pick-up',e(D.empty))}${bx('Full return yard',e(D.ret))}</div>
+${tbl(['Equipment','Qty','Commodity','Est. G.W (KGS)','Freight'],[[e(D.contType),'1',goodsLine(),k(D.gross),e(D.freight)]])}
+<p><b>Special instructions:</b></p><ul style="margin-left:18px"><li>VGM and SI must be submitted before cut-off.</li><li>Food grade containers required; clean, dry, odour-free.</li><li>Free time at POD: 14 days demurrage/detention.</li></ul>${sig('FOR THE CARRIER','FOR THE SHIPPER')}`],
+bl:['Bill of Lading',()=>`<h2>Bill of Lading</h2><div class="sub">B/L No.: <b>${e(D.blNo)}</b> &nbsp;|&nbsp; Booking No.: ${e(D.bookingNo)}</div>
+<div class="g2">${bx('Shipper',e(D.exporter))}${bx('Carrier',e(D.line))}${bx('Consignee','TO THE ORDER OF '+e(D.importer.split('\n')[0]))}${bx('Notify party',e(D.notify))}${bx('Vessel / Voyage',e(D.vessel)+' / '+e(D.voyage))}${bx('Port of loading',e(D.pol))}${bx('Port of discharge',e(D.pod))}${bx('Place &amp; date of issue',e(D.place.split(',')[0])+', '+f(D.etd))}</div>
+${tbl(['Container / Seal','Packages &amp; description','G.W (KGS)','Measurement'],[[e(D.containerNo)+' / '+e(D.seal)+'<br>'+e(D.marks),`${k(D.pkgs)} ${e(D.pack)} OF<br>${goodsLine()}<br>${e(D.freight)} – SHIPPED ON BOARD`,k(D.gross),m(D.cbm)+' CBM']])}
+<p>Number of original B/Ls: <b>${e(D.originals)}</b>. Shipped on board in apparent good order and condition, to be delivered at the port of discharge subject to the terms of this bill of lading.</p>${sig('FOR THE CARRIER (AS AGENT)','')}`],
+co:['Certificate of Origin',()=>`<h2>Certificate of Origin</h2><div class="sub">${e(D.coForm)} &nbsp;|&nbsp; Reference No.: <b>${e(D.coNo)}</b></div>
+<div class="g2">${bx('1. Exporter',e(D.exporter))}${bx('2. Consignee',e(D.importer))}${bx('3. Means of transport',`BY SEA: ${e(D.vessel)} / ${e(D.voyage)}<br>From ${e(D.pol)}<br>To ${e(D.pod)}`)}${bx('4. Issuing authority',e(D.authority))}</div>
+${tbl(['Marks &amp; Nos.','Description of goods','HS code','Origin criterion','Quantity','Invoice No. / Date'],[[e(D.marks),e(D.goods),e(D.hs),e(D.criterion),k(D.net)+' KGS<br>'+k(D.pkgs)+' '+e(D.pack),e(D.invNo)+'<br>'+f(D.etd)]])}
+<p><b>Declaration by the exporter:</b> The undersigned hereby declares that the above details and statements are correct, that all goods were produced in <b>${e(D.origin)}</b> and comply with the origin requirements.</p>
+<p style="margin-top:6px"><b>Certification:</b> It is hereby certified, on the basis of control carried out, that the declaration by the exporter is correct.</p>${sig('EXPORTER','ISSUING AUTHORITY')}`],
+ins:['Insurance Certificate',()=>`<h2>Insurance Certificate</h2><div class="sub">Policy No.: <b>${e(D.policyNo)}</b> &nbsp;|&nbsp; Insurer: ${e(D.insurer)}</div>
+<div class="g2">${bx('Assured',e(D.exporter))}${bx('Claim payable to',e(D.importer)+'<br>(in USD, at '+e(D.pod.split(',')[0])+')')}${bx('Voyage',`From ${e(D.pol)}<br>To ${e(D.pod)}`)}${bx('Vessel / Voyage / B/L',e(D.vessel)+' / '+e(D.voyage)+' / '+e(D.blNo))}</div>
+${tbl(['Marks &amp; Nos.','Subject matter insured','Sum insured (110% CIF)'],[[e(D.marks),`${k(D.pkgs)} ${e(D.pack)} OF<br>${goodsLine()}<br>Invoice ${e(D.invNo)}: USD ${m(total())}`,'<b>USD '+m(ins())+'</b><br>'+words(ins())]])}
+<p><b>Conditions of cover:</b><br>${e(D.cover)}</p><p style="margin-top:6px"><b>Claim settling agent:</b><br>${e(D.claim)}</p>
+<p style="margin-top:6px">In the event of loss or damage which may result in a claim, immediate notice must be given to the settling agent. Issued in ${e(D.originals.split(' ')[0])} original(s), one of which being accomplished the others to stand void.</p>${sig('THE INSURER','')}`]};
+let cur='contract',tm;
+const wrapDoc=k=>`<div class="doc"><div class="stu">[ SINH VIÊN: ${e(D.sname||'..........')} - MSSV: ${e(D.mssv||'..........')} ]</div>${DOCS[k][1]()}</div>`;
+const show=()=>{document.getElementById('doc').innerHTML=wrapDoc(cur);document.querySelectorAll('#tabs .btn[data-k]').forEach(b=>b.classList.toggle('on',b.dataset.k===cur));const c=document.getElementById('calc');if(c)c.innerHTML=`Tổng trị giá: <b>USD ${m(total())}</b><br>Giá trị bảo hiểm (110%): <b>USD ${m(ins())}</b>`};
+document.getElementById('form').innerHTML=G.map((g,i)=>`<details ${i<2?'open':''}><summary>${g[0]}</summary><div class="grp">${g[1].map(([key,lb,ty,w,op])=>key=='_calc'?'<div class="calc" id="calc"></div>':`<div class="f ${w=='w'?'w':''}"><label>${lb}</label>${ty=='t'?`<textarea data-k="${key}" rows="3">${ee(D[key]).replace(/<br>/g,'\n')}</textarea>`:ty=='s'?`<select data-k="${key}"><option value="">-- Chọn --</option>${op.map(o=>`<option ${D[key]==o?'selected':''}>${o}</option>`).join('')}</select>`:`<input data-k="${key}" type="${ty||'text'}" value="${ee(D[key])}">`}</div>`).join('')}</div></details>`).join('');
+document.getElementById('form').addEventListener('input',x=>{const t=x.target;D[t.dataset.k]=t.type=='number'?+t.value:t.value;clearTimeout(tm);tm=setTimeout(show,120)});
+document.getElementById('tabs').innerHTML=Object.entries(DOCS).map(([k,v])=>`<button class="btn" data-k="${k}" onclick="cur='${k}';show()">${v[0]}</button>`).join('');
+const opt=k=>({margin:8,filename:`${(D.mssv||'MSSV')}_${DOCS[k][0].replace(/\s+/g,'_')}.pdf`,image:{type:'jpeg',quality:.95},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4'},pagebreak:{mode:['css','legacy']}});
+function mk(k){const d=document.createElement('div');d.innerHTML=wrapDoc(k);const el=d.firstChild;el.style.boxShadow='none';return el}
+const pdfOne=()=>html2pdf().set(opt(cur)).from(mk(cur)).save();
+async function pdfAll(){if((!D.sname||!D.mssv)&&!confirm('Chưa nhập Họ tên / MSSV. Vẫn xuất?'))return;const b=document.getElementById('allBtn'),t=b.textContent;
+for(const [i,k] of Object.keys(DOCS).entries()){b.textContent=`Đang xuất ${i+1}/7...`;await html2pdf().set(opt(k)).from(mk(k)).save();await new Promise(r=>setTimeout(r,700))}b.textContent=t}
+show();
+
+const $=i=>document.getElementById(i);
+const BLANK={};Object.keys(SAMPLE).forEach(x=>BLANK[x]=typeof SAMPLE[x]=='number'?0:'');
+const fillForm=()=>document.querySelectorAll('#form [data-k]').forEach(x=>x.value=(x.type=='number'&&!D[x.dataset.k])?'':D[x.dataset.k]??'');
+function newDocs(){if(!confirm('Tạo mới sẽ xóa toàn bộ dữ liệu đang nhập (giữ lại Họ tên và MSSV). Tiếp tục?'))return;
+Object.assign(D,BLANK,{sname:D.sname,mssv:D.mssv});fillForm();cur='contract';show();document.querySelectorAll('#form details').forEach(d=>d.open=true);
+$('form').scrollTop=0;const f1=document.querySelector('[data-k=sname]');f1.focus();toast('Đã tạo bộ chứng từ trắng. Nhập thông tin ở khung bên trái, nội dung sẽ tự điền vào các chứng từ.')}
+function toast(t){let d=$('toast');if(!d){d=document.createElement('div');d.id='toast';d.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#01579b;color:#fff;padding:10px 16px;border-radius:8px;z-index:60;font-size:14px;max-width:90vw;box-shadow:0 4px 12px #0005';document.body.appendChild(d)}d.textContent=t;d.style.display='block';clearTimeout(d.t);d.t=setTimeout(()=>d.style.display='none',5000)}
+const withData=(d,fn)=>{const b=D;D=d;try{return fn()}finally{D=b}};
+function openM(t,list,fn){$('mtitle').textContent=t;$('modal').style.display='flex';$('mtabs').innerHTML=list.map(([x,l])=>`<button class="btn" data-m="${x}" onclick="${fn}('${x}')">${l}</button>`).join('')}
+const closeM=()=>$('modal').style.display='none';
+const mOn=x=>document.querySelectorAll('#mtabs .btn').forEach(b=>b.classList.toggle('on',b.dataset.m===x));
+function sampleTab(x){mOn(x);$('mbody').style.background='#cfd8dc';$('mbody').innerHTML=withData(SAMPLE,()=>wrapDoc(x));$('mbody').scrollTop=0}
+function openSample(){openM('Bộ chứng từ mẫu (dữ liệu minh họa)',Object.entries(DOCS).map(([x,v])=>[x,v[0]]),'sampleTab');
+$('mact').innerHTML='<button class="btn red" onclick="useSample()">Dùng mẫu này để chỉnh sửa</button>';sampleTab('contract')}
+function useSample(){if(!confirm('Nạp dữ liệu mẫu vào form (giữ lại Họ tên và MSSV)?'))return;Object.assign(D,SAMPLE,{sname:D.sname,mssv:D.mssv});fillForm();show();closeM()}
+const L=a=>'<ul>'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+const GUIDE={all:['Tổng quan',`<h3>Cách dùng phần mềm</h3>`+L(['<b>Tạo mới chứng từ:</b> xóa dữ liệu, nhập lô hàng của riêng bạn.','<b>Chứng từ mẫu:</b> xem bộ chứng từ hoàn chỉnh để đối chiếu; có thể nạp vào form để sửa.','Nhập Họ tên và MSSV ở nhóm đầu tiên, rồi điền lần lượt các nhóm 1 → 5. Bản xem trước cập nhật ngay.','Bấm <b>Xuất PDF</b> cho từng chứng từ, hoặc <b>Tải trọn bộ</b> để nhận 7 file riêng.'])+`<h3>Thứ tự lập chứng từ trong thực tế</h3>`+L(['Hợp đồng ngoại thương → Booking Note (đặt chỗ) → Commercial Invoice → Packing List → Bill of Lading → C/O → Insurance Certificate.'])+`<div class="tip"><b>Nguyên tắc vàng:</b> các chứng từ phải <b>nhất quán</b> về tên các bên, mô tả hàng, số lượng, trọng lượng, cảng, tên tàu. Chỉ cần lệch một chi tiết, ngân hàng có thể từ chối thanh toán theo L/C. Phần mềm tự điền cùng dữ liệu vào mọi chứng từ để bạn không bị lệch.</div>`],
+contract:['Hợp đồng',`<h3>Mục đích</h3><p>Văn bản thỏa thuận giữa người bán và người mua, là cơ sở pháp lý của cả lô hàng.</p><h3>Cần nhập</h3>`+L(['Số hợp đồng, ngày và nơi ký.','Hai bên: tên đầy đủ, địa chỉ, điện thoại.','Hàng hóa: tên, quy cách, mã HS, số lượng, đơn giá, tổng trị giá.','Incoterms, cảng đi/đến, thời hạn giao hàng, điều khoản thanh toán.'])+`<h3>Lưu ý</h3>`+L(['Điều kiện Incoterms quyết định ai trả cước và bảo hiểm (CIF: người bán trả).','Tổng trị giá = số lượng (MT) × đơn giá; phần mềm tự tính và viết bằng chữ.','Điều khoản thanh toán (L/C, T/T...) phải khớp với Invoice và hồ sơ ngân hàng.'])],
+invoice:['Commercial Invoice',`<h3>Mục đích</h3><p>Hóa đơn thương mại: yêu cầu thanh toán của người bán, dùng để khai hải quan và thanh toán.</p><h3>Cần nhập</h3>`+L(['Số hóa đơn, ngày lập.','Số hợp đồng và số L/C (nếu thanh toán bằng L/C).','Đơn giá, số lượng; thông tin ngân hàng người thụ hưởng.'])+`<h3>Lưu ý</h3>`+L(['Mô tả hàng phải giống hệt L/C và hợp đồng.','Số tiền bằng chữ phải khớp số tiền bằng số.','Ngày hóa đơn không được sau ngày giao hàng trên B/L.'])],
+packing:['Packing List',`<h3>Mục đích</h3><p>Bảng kê chi tiết đóng gói, giúp hải quan và người mua kiểm tra hàng.</p><h3>Cần nhập</h3>`+L(['Số kiện, loại bao bì, KG tịnh mỗi kiện.','Net (tịnh), Gross (cả bì), thể tích CBM.','Số container, số seal, shipping marks.'])+`<h3>Lưu ý</h3>`+L(['Gross luôn lớn hơn Net.','Tổng số kiện × KG/kiện nên bằng Net weight.','Net, Gross phải khớp Invoice và B/L.'])],
+booking:['Booking Note',`<h3>Mục đích</h3><p>Lệnh đặt chỗ gửi hãng tàu để giữ chỗ cho lô hàng.</p><h3>Cần nhập</h3>`+L(['Hãng tàu, tên tàu, chuyến, số booking.','ETD, SI cut-off, CY cut-off.','Nơi lấy cont rỗng, nơi hạ bãi, loại và số lượng container, cước (prepaid/collect).'])+`<h3>Lưu ý</h3>`+L(['Quá hạn cut-off, hàng có thể bị lỡ tàu.','CIF/CFR thường để cước <b>Prepaid</b>; FOB để <b>Collect</b>.','Hàng thực phẩm cần container food grade.'])],
+bl:['Bill of Lading',`<h3>Mục đích</h3><p>Vận đơn đường biển: biên lai nhận hàng, bằng chứng hợp đồng vận chuyển và chứng từ sở hữu hàng.</p><h3>Cần nhập</h3>`+L(['Số B/L, tên tàu và chuyến, cảng đi/đến.','Shipper, Consignee, Notify party.','Số bản gốc, container, seal, trọng lượng, CBM.'])+`<h3>Lưu ý</h3>`+L(['Consignee "To order" cho phép chuyển nhượng vận đơn.','Ngày B/L chính là ngày giao hàng, phải trong hạn L/C.','Điều khoản cước trên B/L phải khớp Incoterms.'])],
+co:['C/O',`<h3>Mục đích</h3><p>Giấy chứng nhận xuất xứ, giúp người mua hưởng ưu đãi thuế hoặc chứng minh nguồn gốc hàng.</p><h3>Cần nhập</h3>`+L(['Mẫu C/O (Form B, D, E, AK, EUR.1...) theo nước nhập khẩu.','Số C/O, tiêu chuẩn xuất xứ (WO, PE, RVC...), cơ quan cấp.'])+`<h3>Lưu ý</h3>`+L(['Chọn mẫu đúng hiệp định: ASEAN dùng Form D, châu Âu dùng EUR.1.','Mô tả hàng, mã HS, số lượng phải trùng Invoice.','Cà phê trồng tại Việt Nam thường đạt tiêu chuẩn WO.'])],
+ins:['Bảo hiểm',`<h3>Mục đích</h3><p>Chứng thư bảo hiểm hàng hóa, bồi thường khi hàng mất mát hoặc hư hỏng trong vận chuyển.</p><h3>Cần nhập</h3>`+L(['Công ty bảo hiểm, số đơn.','Điều kiện bảo hiểm (ICC A, B, C), đại lý giám định.'])+`<h3>Lưu ý</h3>`+L(['Số tiền bảo hiểm = 110% giá trị CIF (phần mềm tự tính).','Theo CIF, người bán mua bảo hiểm tối thiểu ICC (C); ICC (A) bảo vệ rộng nhất.','Ngày bảo hiểm không được sau ngày giao hàng.'])]};
+function guideTab(x){mOn(x);$('mbody').style.background='#fff';$('mbody').innerHTML=`<div class="gd"><h2 style="color:#01579b">${GUIDE[x][0]==='Tổng quan'?'Hướng dẫn tổng quan':'Hướng dẫn: '+(DOCS[x]?DOCS[x][0]:'')}</h2>${GUIDE[x][1]}</div>`;$('mbody').scrollTop=0}
+function openGuide(){openM('Hướng dẫn nội dung chứng từ',Object.entries(GUIDE).map(([x,v])=>[x,v[0]]),'guideTab');$('mact').innerHTML='';guideTab('all')}
+document.addEventListener('keydown',x=>{if(x.key=='Escape')closeM()});$('modal').addEventListener('click',x=>{if(x.target.id=='modal')closeM()});
+</script></body></html>
