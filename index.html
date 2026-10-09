@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800&display=swap">
 <title>TradeDoc Pro - Tạo bộ chứng từ ngoại thương</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
 body{display:flex;flex-direction:column;height:100vh;background:#e8f4f8;color:#263238}
@@ -25,20 +25,17 @@ textarea{resize:vertical;min-height:62px;line-height:1.4}
 #tabs{display:flex;gap:6px;padding:8px;background:#fff9e6;overflow-x:auto;border-bottom:1px solid #ffe082;align-items:center}
 #tabs .btn{white-space:nowrap;padding:7px 11px;font-size:13px}#tabs .btn.on{background:#0288d1;color:#fff}
 #scroll{flex:1;overflow:auto;padding:16px;background:#cfd8dc}
-.doc{width:794px;margin:0 auto;background:#fff;padding:12mm;font:13px/1.55 'Times New Roman',Times,serif;color:#000;box-shadow:0 2px 10px #0004}
-.doc .stu{font:600 10.5px Arial,sans-serif;text-align:center;color:#444;border-bottom:1px solid #999;padding-bottom:4px;margin-bottom:14px}
-.doc h2{font-size:21px;letter-spacing:1px;text-align:center;margin:4px 0 8px;padding:7px 0;border-top:3px double #000;border-bottom:3px double #000;text-transform:uppercase}
-.doc .sub{text-align:center;margin-bottom:12px;font-size:12.5px}
-.doc table{width:100%;border-collapse:collapse;margin:10px 0}
-.doc td,.doc th{border:1px solid #000;padding:6px 7px;vertical-align:top;font-size:12.5px;line-height:1.45}.doc th{background:#ececec;font:700 11.5px Arial,sans-serif;text-align:center}
-.doc p{margin:6px 0;text-align:justify}.doc ul{margin:4px 0 4px 20px}
-.g2{display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;border-right:0;border-bottom:0;margin-bottom:6px}
-.doc .bx{border-right:1px solid #000;border-bottom:1px solid #000;padding:6px 8px;min-height:58px;font-size:12.5px;line-height:1.45}
-.doc .bx b{display:block;font:700 10px Arial,sans-serif;text-transform:uppercase;color:#333;margin-bottom:3px;letter-spacing:.3px}
-.doc .art{margin:9px 0;text-align:justify}.doc .art b{font-size:13px}
-.doc .sig{display:flex;justify-content:space-around;margin-top:26px;text-align:center}.doc .sig.one{justify-content:flex-end;padding-right:50px}
-.doc .sg{width:42%;min-height:110px}.doc .sg i{font-size:11px;color:#444}.r{text-align:right}
-@media(max-width:900px){.wrap{flex-direction:column}#form{width:100%;max-height:50%}#doc .doc{zoom:.45}}
+.doc{width:794px;margin:0 auto;background:#fff;padding:14mm 14mm;font:13px/1.5 'Times New Roman',serif;color:#000;box-shadow:0 2px 10px #0004}
+.doc .stu{font:bold 11px Arial;border:1px solid #000;text-align:center;padding:3px;margin-bottom:10px}
+.doc h2{text-align:center;font-size:20px;margin:6px 0 2px;text-transform:uppercase}.doc .sub{text-align:center;margin-bottom:10px}
+.doc table{width:100%;border-collapse:collapse;margin:6px 0}
+.doc td,.doc th{border:1px solid #000;padding:5px 6px;vertical-align:top;font-size:12.5px}.doc th{background:#eee}
+.doc .nb td{border:0;padding:2px 4px}
+.doc .bx{border:1px solid #000;padding:6px;min-height:60px}.doc .bx b{display:block;font-size:11px;text-transform:uppercase}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:0}.g2>.bx{margin:-1px 0 0 -1px}
+.doc .art{margin:8px 0;page-break-inside:avoid}.doc .sig{display:flex;justify-content:space-around;margin-top:30px;text-align:center;page-break-inside:avoid}
+.doc .sig div{width:40%;min-height:100px}.r{text-align:right}
+@media(max-width:900px){.wrap{flex-direction:column}#form{width:100%;max-height:50%}.doc{zoom:.45}}
 #modal{position:fixed;inset:0;background:#0008;z-index:50;display:none;align-items:center;justify-content:center}
 .mbox{background:#fff;width:min(960px,96vw);height:90vh;border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
 .mhead{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;background:#fff9e6;border-bottom:2px solid #ffe082;flex-wrap:wrap}
@@ -50,9 +47,77 @@ footer{background:#fff9e6;border-top:2px solid #ffe082;padding:7px 14px;text-ali
 footer a{color:#0277bd;font-weight:600;text-decoration:none}footer a:hover{text-decoration:underline}
 footer .sep{margin:0 8px;color:#ffb300}
 @media(max-width:700px){footer .sep{display:none}footer span{display:block}}
+#intro{position:fixed;inset:0;z-index:100;overflow:auto;background:#f2f7fa;color:#0d2b45;scroll-behavior:smooth;line-height:1.6}
+#intro,#intro *{font-family:'Be Vietnam Pro','Segoe UI',Tahoma,Arial,sans-serif}
+#intro .in-hero{background:#0d2b45;color:#fff}
+.in-w{max-width:1080px;margin:0 auto;padding:0 24px}
+.in-top{display:flex;justify-content:space-between;align-items:center;padding:18px 0;font-weight:700;gap:12px;flex-wrap:wrap}
+.in-top a{color:#bcd6e6;text-decoration:none;font-weight:600;font-size:14px;margin-left:18px}.in-top a:hover{color:#ffcf4a}
+.in-hg{display:grid;grid-template-columns:1fr 1.1fr;gap:32px;align-items:center;padding:20px 0 56px}
+#intro h1{font-size:clamp(32px,4.6vw,54px);line-height:1.1;font-weight:800;margin-bottom:16px;letter-spacing:-.5px}
+#intro .in-lead{font-size:17px;color:#cfe3ef;max-width:46ch;margin-bottom:26px}
+.in-bt{display:flex;gap:12px;flex-wrap:wrap}
+.in-b{border:2px solid #ffcf4a;background:#ffcf4a;color:#0d2b45;font-weight:700;font-size:16px;padding:12px 22px;border-radius:8px;cursor:pointer}
+.in-b:hover{background:#ffe08a;border-color:#ffe08a}.in-b.g{background:transparent;color:#fff;border-color:#5f87a3}.in-b.g:hover{border-color:#fff;background:#ffffff14}
+.in-b.d{background:#0d2b45;border-color:#0d2b45;color:#fff}.in-b.d:hover{background:#17415f}.in-b.o{background:#fff;color:#0d2b45;border-color:#0d2b45}.in-b.o:hover{background:#e8f4f8}
+.in-note{margin-top:18px;font-size:13.5px;color:#9fc0d6}
+.in-hg svg{width:100%;height:auto;display:block}
+.in-s{max-width:1080px;margin:0 auto;padding:60px 24px 8px}
+#intro h2{font-size:clamp(24px,3vw,34px);line-height:1.2;font-weight:800;margin-bottom:8px}
+.in-sub{color:#42607a;max-width:62ch;margin-bottom:28px}
+.in-docs{display:grid;grid-template-columns:1fr 1fr;column-gap:44px}
+.in-d{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #c5d6e0;align-items:center}
+.in-d svg{flex:none;width:42px;height:auto}.in-d b{display:block;font-size:16px}.in-d i{font-style:normal;font-size:12.5px;color:#0f6e8c;font-weight:600}.in-d p{font-size:14px;color:#42607a;line-height:1.45;margin-top:2px}
+.in-flow{display:grid;grid-template-columns:1.1fr 1fr;gap:36px;align-items:center}
+.in-flow svg{width:100%;height:auto}
+.in-st{display:flex;gap:16px;margin-bottom:22px}.in-st>b{font-size:42px;line-height:1;color:#e4572e;font-weight:800;min-width:34px}.in-st h3{font-size:18px;margin-bottom:2px}.in-st p{font-size:14.5px;color:#42607a}
+.in-t{border-top:2px solid #0d2b45}
+.in-r{display:grid;grid-template-columns:210px 1fr;gap:20px;padding:15px 0;border-bottom:1px solid #c5d6e0}
+.in-r h3{font-size:15.5px;color:#0f6e8c;line-height:1.35}.in-r p{font-size:14.5px}.in-r p+p{color:#42607a;margin-top:4px}
+.in-2{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-top:40px}
+.in-ex{background:#fff;border:1.5px solid #b0bec5;border-radius:6px;padding:10px 12px;font:13px/1.55 Consolas,'Courier New',monospace;white-space:pre-wrap;box-shadow:0 0 0 3px #b3e5fc}
+.in-ex+p{font-size:13.5px;color:#42607a;margin-top:10px}
+#intro h3.in-h{font-size:17px;margin-bottom:10px}
+.in-ck{list-style:none}.in-ck li{position:relative;padding:0 0 10px 30px;font-size:14.5px}
+.in-ck li:before{content:"✓";position:absolute;left:0;top:0;width:20px;height:20px;border-radius:50%;background:#2a9d8f;color:#fff;font-size:12px;text-align:center;line-height:20px;font-weight:700}
+.in-end{margin-top:56px;background:#0d2b45;color:#fff;text-align:center;padding:48px 24px}
+.in-end p{color:#cfe3ef;margin:6px 0 22px}.in-end .in-bt{justify-content:center}
+.in-ft{background:#0a2238;color:#9fc0d6;text-align:center;font-size:12.5px;padding:12px 16px;line-height:1.7}.in-ft a{color:#ffcf4a;text-decoration:none}
+@media(max-width:820px){.in-hg,.in-flow,.in-2,.in-docs{grid-template-columns:1fr}.in-r{grid-template-columns:1fr;gap:4px}.in-top a{display:none}}
+@media(prefers-reduced-motion:no-preference){#intro .in-hero svg .bob{animation:bob 5s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-6px)}}}
+#intro button:focus-visible{outline:3px solid #ffcf4a;outline-offset:2px}
 </style></head><body>
+<div id="intro"><section class="in-hero"><div class="in-w">
+<div class="in-top"><span>📑 TradeDoc Pro</span><nav><a href="#in-docs">7 chứng từ</a><a href="#in-how">Cách hoạt động</a><a href="#in-input">Hướng dẫn nhập liệu</a></nav></div>
+<div class="in-hg"><div><h1>Lập trọn bộ chứng từ xuất khẩu chỉ với một lần nhập liệu</h1>
+<p class="in-lead">Nhập thông tin lô hàng một lần, phần mềm tự điền vào 7 chứng từ ngoại thương và xuất ra PDF để nộp bài.</p>
+<div class="in-bt"><button class="in-b" onclick="goApp('start')">Vào phần mềm</button><button class="in-b g" onclick="goApp('sample')">Xem chứng từ mẫu</button></div>
+<p class="in-note">Dành cho sinh viên học môn Nghiệp vụ ngoại thương. Không cần cài đặt, chạy ngay trên trình duyệt.</p></div>
+<div id="in-art"></div></div></div></section>
+<section class="in-s" id="in-docs"><h2>Bộ chứng từ gồm 7 văn bản</h2><p class="in-sub">Đúng thứ tự một lô hàng đi qua trong thực tế, từ ký hợp đồng đến mua bảo hiểm.</p><div class="in-docs" id="in-list"></div></section>
+<section class="in-s" id="in-how"><h2>Phần mềm hoạt động thế nào</h2><p class="in-sub">Mọi chứng từ dùng chung một bộ dữ liệu, nên số liệu luôn khớp nhau.</p>
+<div class="in-flow"><div id="in-ui"></div><div>
+<div class="in-st"><b>1</b><div><h3>Nhập ở khung bên trái</h3><p>Điền Họ tên, MSSV rồi lần lượt các nhóm thông tin từ 1 đến 5.</p></div></div>
+<div class="in-st"><b>2</b><div><h3>Xem ở khung bên phải</h3><p>Chứng từ cập nhật ngay khi bạn gõ. Bấm các tab phía trên để chuyển giữa 7 chứng từ.</p></div></div>
+<div class="in-st"><b>3</b><div><h3>Xuất PDF</h3><p>Tải từng chứng từ đang xem, hoặc tải trọn bộ thành 7 file riêng, tên file có sẵn MSSV.</p></div></div></div></div></section>
+<section class="in-s" id="in-input"><h2>Hướng dẫn nhập liệu</h2><p class="in-sub">Khi mở phần mềm, form đã có sẵn dữ liệu minh họa. Bạn có thể sửa từng ô, hoặc bấm “Tạo mới chứng từ” để bắt đầu từ bộ trắng.</p>
+<div class="in-t">
+<div class="in-r"><h3>Sinh viên</h3><div><p>Họ và tên, MSSV.</p><p>Hiện ở đầu mỗi file PDF và đặt tên file. Nhập trước khi xuất.</p></div></div>
+<div class="in-r"><h3>1. Hợp đồng và thanh toán</h3><div><p>Số hợp đồng, ngày ký, số hóa đơn, điều khoản thanh toán, thông tin ngân hàng.</p><p>Thanh toán bằng L/C thì nhập thêm số L/C để hiện trên hợp đồng và hóa đơn.</p></div></div>
+<div class="in-r"><h3>2. Các bên</h3><div><p>Người xuất khẩu, người nhập khẩu, bên được thông báo (Notify).</p><p>Dòng đầu là tên công ty, các dòng sau là địa chỉ và điện thoại. B/L lấy dòng đầu của người nhập khẩu để ghi “To order of”.</p></div></div>
+<div class="in-r"><h3>3. Hàng hóa</h3><div><p>Mô tả hàng, mã HS, xuất xứ, số kiện, KG mỗi kiện, Net, Gross, đơn giá (USD/MT), CBM.</p><p>Tổng trị giá = Net ÷ 1.000 × đơn giá. Phần mềm tự tính và viết bằng chữ.</p></div></div>
+<div class="in-r"><h3>4. Vận chuyển</h3><div><p>Incoterms, cảng đi và cảng đến, tàu, chuyến, số booking, số B/L, ETD, hạn cut-off, container, seal.</p><p>CIF và CFR thường chọn cước Prepaid, FOB chọn Collect.</p></div></div>
+<div class="in-r"><h3>5. C/O và bảo hiểm</h3><div><p>Chọn mẫu C/O theo thị trường nhập khẩu, nhập tiêu chuẩn xuất xứ, điều kiện bảo hiểm.</p><p>Số tiền bảo hiểm tự tính bằng 110% giá trị hóa đơn.</p></div></div></div>
+<div class="in-2"><div><h3 class="in-h">Ví dụ: ô “Người xuất khẩu”</h3><div class="in-ex">VIETNAM AGRI-EXPORT CO., LTD
+123 NGUYEN HUE STREET, DISTRICT 1,
+HO CHI MINH CITY, VIETNAM
+Tel: +84 28 3822 0000</div><p>Gõ bằng tiếng Anh, viết hoa. Nhấn Enter để xuống dòng giữa tên và địa chỉ.</p></div>
+<div><h3 class="in-h">Kiểm tra trước khi xuất PDF</h3><ul class="in-ck"><li>Mô tả hàng, mã HS giống nhau trên mọi chứng từ.</li><li>Gross lớn hơn Net, và số kiện × KG/kiện bằng Net.</li><li>Ngày hóa đơn, ngày B/L và ngày bảo hiểm không sau ngày giao hàng.</li><li>Incoterms khớp với điều khoản cước và bảo hiểm.</li><li>Đã nhập Họ tên và MSSV.</li></ul></div></div></section>
+<section class="in-end"><h2>Sẵn sàng lập bộ chứng từ của bạn?</h2><p>Bắt đầu từ dữ liệu minh họa để làm quen, hoặc từ bộ trắng để nhập lô hàng riêng.</p><div class="in-bt"><button class="in-b" onclick="goApp('start')">Vào phần mềm</button><button class="in-b g" onclick="goApp('new')">Tạo bộ chứng từ trắng</button></div></section>
+<div class="in-ft">© Phần mềm do GV Nguyễn Khánh Dương phát triển &nbsp;|&nbsp; Mail: <a href="mailto:nguyenkhanhduong0111@gmail.com">nguyenkhanhduong0111@gmail.com</a> &nbsp;|&nbsp; Phần mềm phục vụ giảng dạy và học tập</div></div>
+
 <header><h1>📑 TradeDoc Pro – Tạo bộ chứng từ ngoại thương</h1>
-<div><button class="btn" onclick="newDocs()">➕ Tạo mới chứng từ</button> <button class="btn" onclick="openSample()">📄 Chứng từ mẫu</button> <button class="btn" onclick="openGuide()">❓ Hướng dẫn</button> <button class="btn" onclick="pdfOne()">Xuất PDF chứng từ đang xem</button> <button class="btn red" id="allBtn" onclick="pdfAll()">Tải trọn bộ (7 file PDF riêng)</button></div></header>
+<div><button class="btn" onclick="showIntro()">🏠 Giới thiệu</button> <button class="btn" onclick="newDocs()">➕ Tạo mới chứng từ</button> <button class="btn" onclick="openSample()">📄 Chứng từ mẫu</button> <button class="btn" onclick="openGuide()">❓ Hướng dẫn</button> <button class="btn" onclick="pdfOne()">Xuất PDF chứng từ đang xem</button> <button class="btn red" id="allBtn" onclick="pdfAll()">Tải trọn bộ (7 file PDF riêng)</button></div></header>
 <div class="wrap"><div id="form"></div>
 <div id="pv"><div id="tabs"></div><div id="scroll"><div id="doc"></div></div></div></div>
 <footer><span>© Phần mềm do GV Nguyễn Khánh Dương phát triển</span><span class="sep">|</span><span>Mail: <a href="mailto:nguyenkhanhduong0111@gmail.com">nguyenkhanhduong0111@gmail.com</a></span><span class="sep">|</span><span>Phần mềm phục vụ giảng dạy và học tập</span></footer>
@@ -66,30 +131,16 @@ goods:'VIETNAMESE ROBUSTA COFFEE BEANS GRADE 1, SCREEN 18, MAXIMUM 2% BROKEN, MO
 pkgs:300,pack:'JUTE BAGS',perPkg:60,net:18000,gross:18360,unitPrice:2450,cbm:28,marks:'GLOBAL FOODS USA\nPORT OF LOS ANGELES\nMADE IN VIETNAM\nNOS: 1 - 300',
 incoterms:'CIF Los Angeles Port, USA (Incoterms 2020)',pol:'CAT LAI PORT, HO CHI MINH CITY, VIETNAM',pod:'LOS ANGELES PORT, CALIFORNIA, USA',
 vessel:'EVER GLORY',voyage:'V.082E',line:'EVERGREEN MARINE CORP.',bookingNo:'EGLV1426000123',blNo:'EGLV1426000123',etd:'2026-08-15',siCut:'2026-08-10',cyCut:'2026-08-12',
-empty:'ICD TAN CANG SONG THAN',ret:'CAT LAI PORT TERMINAL',contType:'20\'GP (food grade)',containerNo:'EGHU1234567',seal:'EMCVN123456',freight:'FREIGHT PREPAID',originals:'03 (THREE)',
+empty:'ICD TAN CANG SONG THAN',ret:'CAT LAI PORT TERMINAL',contType:'1 x 20\'GP (food grade)',containerNo:'EGHU1234567',seal:'EMCVN123456',freight:'FREIGHT PREPAID',originals:'03 (THREE)',
 coForm:'FORM B',coNo:'B-2026-0001234',criterion:'WO (Wholly obtained)',authority:'VIETNAM CHAMBER OF COMMERCE AND INDUSTRY (VCCI) – HO CHI MINH CITY BRANCH',
-insurer:'BAO VIET INSURANCE CORPORATION',policyNo:'BV-MC-2026-0456',claim:'BAO VIET INSURANCE – 35 HAI BA TRUNG ST., HANOI',cover:'Institute Cargo Clauses (A) 1/1/2009, Institute War Clauses (Cargo), Institute Strikes Clauses (Cargo)',
-c_qty:"Quantity tolerance: ±5% at Seller's option.",c_price:'',c_pack:'',c_ship:'Partial shipment: allowed. Transhipment: not allowed.',
-c_ins:'To be covered by the Seller for 110% of CIF invoice value, All Risks (ICC A).',
-c_insp:'Quality and quantity are certified by a competent surveyor at port of loading. Any claim must be lodged within 30 days after arrival at port of discharge, with supporting documents.',
-c_fm:'Neither party is liable for failure or delay caused by force majeure events (war, natural disaster, government action). The affected party shall notify the other within 7 days and provide a certificate.',
-c_arb:'Any dispute shall be settled by the Vietnam International Arbitration Centre (VIAC) under its rules. The contract is governed by the CISG and Vietnamese law.',
-c_gen:'This contract is made in two originals in English, one for each party, and takes effect from the date of signing.',c_extra:'',
-invNote:'Goods are packed in new single jute bags. Origin: Vietnam.',pkNote:'',contQty:1,
-bkInst:'VGM and SI must be submitted before cut-off.\nFood grade containers required; clean, dry, odour-free.\nFree time at POD: 14 days demurrage/detention.',
-blRemark:'SHIPPED ON BOARD',blClause:'${e(D.blClause)}',
-coDecl:'The undersigned hereby declares that the above details and statements are correct, that all goods were produced in VIETNAM and comply with the origin requirements.',
-coCert:'It is hereby certified, on the basis of control carried out, that the declaration by the exporter is correct.',
-insClause:'In the event of loss or damage which may result in a claim, immediate notice must be given to the settling agent. Issued in 03 (THREE) original(s), one of which being accomplished the others to stand void.'};
+insurer:'BAO VIET INSURANCE CORPORATION',policyNo:'BV-MC-2026-0456',claim:'BAO VIET INSURANCE – 35 HAI BA TRUNG ST., HANOI',cover:'Institute Cargo Clauses (A) 1/1/2009, Institute War Clauses (Cargo), Institute Strikes Clauses (Cargo)'};
 const SAMPLE=JSON.parse(JSON.stringify(D));SAMPLE.sname='NGUYEN VAN A';SAMPLE.mssv='2026000001';
 const G=[['Sinh viên (hiện ở đầu mỗi PDF)',[['sname','Họ và tên'],['mssv','MSSV']]],
 ['1. Hợp đồng & thanh toán',[['contractNo','Số hợp đồng'],['date','Ngày ký','date'],['place','Nơi ký','i','w'],['lc','Số L/C (nếu có)'],['invNo','Số hóa đơn'],['payment','Điều khoản thanh toán','t','w'],['bank','Thông tin ngân hàng','t','w']]],
 ['2. Các bên',[['exporter','Người xuất khẩu (Seller)','t','w'],['importer','Người nhập khẩu (Buyer)','t','w'],['notify','Bên được thông báo (Notify)','t','w']]],
 ['3. Hàng hóa',[['goods','Mô tả hàng hóa','t','w'],['hs','Mã HS'],['origin','Xuất xứ'],['pkgs','Số kiện','number'],['pack','Loại bao bì'],['perPkg','KG tịnh / kiện','number'],['net','Net (KGS)','number'],['gross','Gross (KGS)','number'],['unitPrice','Đơn giá (USD/MT)','number'],['cbm','Thể tích (CBM)','number'],['marks','Shipping marks','t','w'],['_calc']]],
-['4. Vận chuyển',[['incoterms','Incoterms','i','w'],['pol','Cảng đi (POL)','i','w'],['pod','Cảng đến (POD)','i','w'],['vessel','Tên tàu'],['voyage','Chuyến'],['line','Hãng tàu','i','w'],['bookingNo','Booking No.'],['blNo','B/L No.'],['etd','ETD','date'],['siCut','SI Cut-off','date'],['cyCut','CY Cut-off','date'],['freight','Cước phí','s',0,['FREIGHT PREPAID','FREIGHT COLLECT']],['empty','Lấy cont rỗng','i','w'],['ret','Hạ bãi hàng','i','w'],['contType','Loại container'],['contQty','Số lượng cont','number'],['containerNo','Số container'],['seal','Số seal'],['originals','Số bản B/L gốc']]],
-['5. C/O & Bảo hiểm',[['coForm','Mẫu C/O','s',0,['FORM B','FORM D (ATIGA)','FORM E (ASEAN-China)','FORM AK (ASEAN-Korea)','FORM EUR.1 (EVFTA)']],['coNo','Số C/O'],['criterion','Tiêu chuẩn xuất xứ','i','w'],['authority','Cơ quan cấp C/O','t','w'],['insurer','Công ty bảo hiểm','i','w'],['policyNo','Số đơn bảo hiểm'],['claim','Đại lý giám định / bồi thường','t','w'],['cover','Điều kiện bảo hiểm','t','w']]],
-['6. Điều khoản hợp đồng (sửa tự do)',[['c_qty','Điều 2 – Dung sai số lượng','t','w'],['c_price','Điều 3 – Ghi chú về giá','t','w'],['c_pack','Điều 5 – Đóng gói bổ sung','t','w'],['c_ship','Điều 6 – Điều kiện giao hàng bổ sung','t','w'],['c_ins','Điều 8 – Bảo hiểm','t','w'],['c_insp','Điều 9 – Kiểm tra & khiếu nại','t','w'],['c_fm','Điều 10 – Bất khả kháng','t','w'],['c_arb','Điều 11 – Trọng tài & luật áp dụng','t','w'],['c_gen','Điều 12 – Điều khoản chung','t','w'],['c_extra','Điều 13 – Điều khoản bổ sung khác (bỏ trống nếu không dùng)','t','w']]],
-['7. Ghi chú các chứng từ (sửa tự do)',[['invNote','Invoice – Ghi chú','t','w'],['pkNote','Packing List – Ghi chú','t','w'],['bkInst','Booking – Chỉ dẫn đặc biệt (mỗi dòng một ý)','t','w'],['blRemark','B/L – Ghi chú trên hàng (vd: SHIPPED ON BOARD)','i','w'],['blClause','B/L – Điều khoản / xác nhận','t','w'],['coDecl','C/O – Lời khai của nhà xuất khẩu','t','w'],['coCert','C/O – Xác nhận của cơ quan cấp','t','w'],['insClause','Bảo hiểm – Thủ tục khiếu nại & số bản gốc','t','w']]]];
+['4. Vận chuyển',[['incoterms','Incoterms','i','w'],['pol','Cảng đi (POL)','i','w'],['pod','Cảng đến (POD)','i','w'],['vessel','Tên tàu'],['voyage','Chuyến'],['line','Hãng tàu','i','w'],['bookingNo','Booking No.'],['blNo','B/L No.'],['etd','ETD','date'],['siCut','SI Cut-off','date'],['cyCut','CY Cut-off','date'],['freight','Cước phí','s',0,['FREIGHT PREPAID','FREIGHT COLLECT']],['empty','Lấy cont rỗng','i','w'],['ret','Hạ bãi hàng','i','w'],['contType','Loại / số lượng cont','i','w'],['containerNo','Số container'],['seal','Số seal'],['originals','Số bản B/L gốc']]],
+['5. C/O & Bảo hiểm',[['coForm','Mẫu C/O','s',0,['FORM B','FORM D (ATIGA)','FORM E (ASEAN-China)','FORM AK (ASEAN-Korea)','FORM EUR.1 (EVFTA)']],['coNo','Số C/O'],['criterion','Tiêu chuẩn xuất xứ','i','w'],['authority','Cơ quan cấp C/O','t','w'],['insurer','Công ty bảo hiểm','i','w'],['policyNo','Số đơn bảo hiểm'],['claim','Đại lý giám định / bồi thường','t','w'],['cover','Điều kiện bảo hiểm','t','w']]]];
 const DOT='……………',ee=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>'),e=s=>{if(s===0||s==null||String(s).trim()==='')return DOT;return ee(s)},f=d=>d?d.split('-').reverse().join('/'):'………',
 m=n=>+n?Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'………',k=n=>+n?Number(n).toLocaleString('en-US'):'………';
 const total=()=>D.net/1000*D.unitPrice,ins=()=>total()*1.1;
@@ -98,71 +149,59 @@ const w=x=>x<20?o[x]:t[Math.floor(x/10)]+(x%10?'-'+o[x%10]:''),h=x=>(x>=100?o[Ma
 let r=[];[[1e9,'BILLION'],[1e6,'MILLION'],[1e3,'THOUSAND']].forEach(([v,nm])=>{if(i>=v){r.push(h(Math.floor(i/v))+' '+nm);i%=v}});if(i||!r.length)r.push(h(i)||'ZERO');
 return 'SAY: US DOLLARS '+r.join(' ')+(c?' AND '+w(c)+' CENTS':'')+' ONLY.'}
 const bx=(t,c,x='')=>`<div class="bx" style="${x}"><b>${t}</b>${c}</div>`;
-const sig=(a,b)=>`<div class="sig ${b?'':'one'}"><div class="sg"><b>${a}</b><br><i>(Signature, full name &amp; stamp)</i></div>${b?`<div class="sg"><b>${b}</b><br><i>(Signature, full name &amp; stamp)</i></div>`:''}</div>`;
+const sig=(a,b)=>`<div class="sig"><div><b>${a}</b><br><br><br><br>(Signed &amp; Stamped)</div>${b?`<div><b>${b}</b><br><br><br><br>(Signed &amp; Stamped)</div>`:''}</div>`;
 const tbl=(h,rows)=>`<table><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</table>`;
 const goodsLine=()=>`${e(D.goods)}<br>HS CODE: ${e(D.hs)} | ORIGIN: ${e(D.origin)}`;
 const DOCS={
 contract:['Hợp đồng ngoại thương',()=>{const A=(t,x)=>`<div class="art"><b>${t}</b><br>${x}</div>`;return `<h2>Sales Contract</h2><div class="sub">No.: <b>${e(D.contractNo)}</b> &nbsp;|&nbsp; Date: ${f(D.date)} &nbsp;|&nbsp; Place: ${e(D.place)}</div>
 <div class="g2">${bx('The Seller (Party A)',e(D.exporter))}${bx('The Buyer (Party B)',e(D.importer))}</div><p style="margin-top:8px">The Seller and the Buyer have agreed to conclude this contract under the following terms and conditions:</p>
-${A('Article 1: Commodity &amp; Specification',goodsLine())}${A('Article 2: Quantity',`${k(D.net)} KGS net (${D.net?D.net/1000:'………'} MT). ${e(D.c_qty)} Packing: ${e(D.pkgs)} ${e(D.pack)}.`)}
-${A('Article 3: Unit Price',`USD ${m(D.unitPrice)} per metric ton, ${e(D.incoterms)}.${D.c_price?'<br>'+ee(D.c_price):''}`)}${A('Article 4: Total Amount',`USD ${m(total())}<br>${words(total())}`)}
-${A('Article 5: Packing &amp; Marking',`Packed in new single ${e(D.pack)} of ${k(D.perPkg)} KGS net each. Shipping marks:<br>${e(D.marks)}${D.c_pack?'<br>'+ee(D.c_pack):''}`)}
-${A('Article 6: Shipment &amp; Delivery',`Time of shipment: ETD ${f(D.etd)}. Port of loading: ${e(D.pol)}. Port of discharge: ${e(D.pod)}. ${e(D.c_ship)}`)}
-${A('Article 7: Payment',e(D.payment)+(D.lc?`.<br>L/C No.: ${e(D.lc)}`:'')+`<br>Seller's bank:<br>${e(D.bank)}`)}${A('Article 8: Insurance',e(D.c_ins))}
-${A('Article 9: Inspection &amp; Claims',e(D.c_insp))}
-${A('Article 10: Force Majeure',e(D.c_fm))}
-${A('Article 11: Arbitration &amp; Governing Law',e(D.c_arb))}
-${A('Article 12: General',e(D.c_gen))}${D.c_extra?A('Article 13: Additional Terms',ee(D.c_extra)):''}${sig('THE SELLER','THE BUYER')}`}],
+${A('Article 1: Commodity &amp; Specification',goodsLine())}${A('Article 2: Quantity',`${k(D.net)} KGS net (${D.net?D.net/1000:'………'} MT), ±5% at Seller's option. Packing: ${e(D.pkgs)} ${e(D.pack)}.`)}
+${A('Article 3: Unit Price',`USD ${m(D.unitPrice)} per metric ton, ${e(D.incoterms)}.`)}${A('Article 4: Total Amount',`USD ${m(total())}<br>${words(total())}`)}
+${A('Article 5: Packing &amp; Marking',`Packed in new single ${e(D.pack)} of ${k(D.perPkg)} KGS net each. Shipping marks:<br>${e(D.marks)}`)}
+${A('Article 6: Shipment &amp; Delivery',`Time of shipment: ETD ${f(D.etd)}. Port of loading: ${e(D.pol)}. Port of discharge: ${e(D.pod)}. Partial shipment: allowed. Transhipment: not allowed.`)}
+${A('Article 7: Payment',e(D.payment)+(D.lc?`.<br>L/C No.: ${e(D.lc)}`:'')+`<br>Seller's bank:<br>${e(D.bank)}`)}${A('Article 8: Insurance','To be covered by the Seller for 110% of CIF invoice value, All Risks (ICC A).')}
+${A('Article 9: Inspection &amp; Claims','Quality and quantity are certified by a competent surveyor at port of loading. Any claim must be lodged within 30 days after arrival at port of discharge, with supporting documents.')}
+${A('Article 10: Force Majeure','Neither party is liable for failure or delay caused by force majeure events (war, natural disaster, government action). The affected party shall notify the other within 7 days and provide a certificate.')}
+${A('Article 11: Arbitration &amp; Governing Law','Any dispute shall be settled by the Vietnam International Arbitration Centre (VIAC) under its rules. The contract is governed by the CISG and Vietnamese law.')}
+${A('Article 12: General','This contract is made in two originals in English, one for each party, and takes effect from the date of signing.')}${sig('THE SELLER','THE BUYER')}`}],
 invoice:['Commercial Invoice',()=>`<h2>Commercial Invoice</h2><div class="sub">Invoice No.: <b>${e(D.invNo)}</b> &nbsp;|&nbsp; Date: ${f(D.etd)}</div>
 <div class="g2">${bx('Exporter / Seller',e(D.exporter))}${bx('Importer / Buyer',e(D.importer))}${bx('Contract No. / L/C No.',e(D.contractNo)+(D.lc?' / '+e(D.lc):''))}${bx('Terms of delivery &amp; payment',e(D.incoterms)+'<br>'+e(D.payment))}
 ${bx('Port of loading',e(D.pol))}${bx('Port of discharge',e(D.pod))}${bx('Vessel / Voyage',e(D.vessel)+' / '+e(D.voyage))}${bx('B/L No. / ETD',e(D.blNo)+' / '+f(D.etd))}</div>
 ${tbl(['Marks &amp; Nos.','Description of goods','Quantity (KGS)','Unit price (USD/MT)','Amount (USD)'],[[e(D.marks),goodsLine()+`<br>${k(D.pkgs)} ${e(D.pack)}`,k(D.net),m(D.unitPrice),m(total())],['','<b>TOTAL</b>',k(D.net),'','<b>'+m(total())+'</b>']])}
-<p><b>${words(total())}</b></p><p style="margin-top:6px"><b>Bank details:</b><br>${e(D.bank)}</p>${D.invNote?'<p style="margin-top:6px"><b>Remarks:</b><br>'+ee(D.invNote)+'</p>':''}${sig('THE SELLER','')}`],
+<p><b>${words(total())}</b></p><p style="margin-top:6px"><b>Bank details:</b><br>${e(D.bank)}</p>${sig('THE SELLER','')}`],
 packing:['Detailed Packing List',()=>`<h2>Detailed Packing List</h2><div class="sub">Invoice No.: ${e(D.invNo)} &nbsp;|&nbsp; Contract No.: ${e(D.contractNo)} &nbsp;|&nbsp; Date: ${f(D.etd)}</div>
 <div class="g2">${bx('Exporter',e(D.exporter))}${bx('Importer',e(D.importer))}${bx('Vessel / Voyage',e(D.vessel)+' / '+e(D.voyage))}${bx('From → To',e(D.pol)+'<br>→ '+e(D.pod))}</div>
 ${tbl(['Container / Seal','Description','Packages','N.W (KGS)','G.W (KGS)','CBM'],[[e(D.containerNo)+'<br>Seal: '+e(D.seal)+'<br>'+e(D.contType),goodsLine(),k(D.pkgs)+' '+e(D.pack)+'<br>('+k(D.perPkg)+' KGS/each)',k(D.net),k(D.gross),m(D.cbm)],['','<b>TOTAL</b>',k(D.pkgs),k(D.net),k(D.gross),m(D.cbm)]])}
-<p><b>Marks &amp; Numbers:</b><br>${e(D.marks)}</p>${D.pkNote?'<p style="margin-top:6px"><b>Remarks:</b><br>'+ee(D.pkNote)+'</p>':''}${sig('THE SELLER','')}`],
+<p><b>Marks &amp; Numbers:</b><br>${e(D.marks)}</p>${sig('THE SELLER','')}`],
 booking:['Booking Note',()=>`<h2>Booking Note</h2><div class="sub">Booking No.: <b>${e(D.bookingNo)}</b> &nbsp;|&nbsp; Carrier: ${e(D.line)}</div>
 <div class="g2">${bx('Shipper',e(D.exporter))}${bx('Consignee',e(D.importer))}${bx('Vessel / Voyage',e(D.vessel)+' / '+e(D.voyage))}${bx('ETD',f(D.etd))}${bx('Port of loading',e(D.pol))}${bx('Port of discharge',e(D.pod))}${bx('SI cut-off',f(D.siCut))}${bx('CY cut-off',f(D.cyCut))}${bx('Empty pick-up',e(D.empty))}${bx('Full return yard',e(D.ret))}</div>
-${tbl(['Equipment','Qty','Commodity','Est. G.W (KGS)','Freight'],[[e(D.contType),e(D.contQty),goodsLine(),k(D.gross),e(D.freight)]])}
-<p><b>Special instructions:</b></p><ul style="margin-left:18px">${(D.bkInst||'').split('\n').filter(x=>x.trim()).map(x=>'<li>'+ee(x)+'</li>').join('')||'<li>'+DOT+'</li>'}</ul>${sig('FOR THE CARRIER','FOR THE SHIPPER')}`],
+${tbl(['Equipment','Qty','Commodity','Est. G.W (KGS)','Freight'],[[e(D.contType),'1',goodsLine(),k(D.gross),e(D.freight)]])}
+<p><b>Special instructions:</b></p><ul style="margin-left:18px"><li>VGM and SI must be submitted before cut-off.</li><li>Food grade containers required; clean, dry, odour-free.</li><li>Free time at POD: 14 days demurrage/detention.</li></ul>${sig('FOR THE CARRIER','FOR THE SHIPPER')}`],
 bl:['Bill of Lading',()=>`<h2>Bill of Lading</h2><div class="sub">B/L No.: <b>${e(D.blNo)}</b> &nbsp;|&nbsp; Booking No.: ${e(D.bookingNo)}</div>
 <div class="g2">${bx('Shipper',e(D.exporter))}${bx('Carrier',e(D.line))}${bx('Consignee','TO THE ORDER OF '+e(D.importer.split('\n')[0]))}${bx('Notify party',e(D.notify))}${bx('Vessel / Voyage',e(D.vessel)+' / '+e(D.voyage))}${bx('Port of loading',e(D.pol))}${bx('Port of discharge',e(D.pod))}${bx('Place &amp; date of issue',e(D.place.split(',')[0])+', '+f(D.etd))}</div>
-${tbl(['Container / Seal','Packages &amp; description','G.W (KGS)','Measurement'],[[e(D.containerNo)+' / '+e(D.seal)+'<br>'+e(D.marks),`${k(D.pkgs)} ${e(D.pack)} OF<br>${goodsLine()}<br>${e(D.freight)}${D.blRemark?' – '+ee(D.blRemark):''}`,k(D.gross),m(D.cbm)+' CBM']])}
+${tbl(['Container / Seal','Packages &amp; description','G.W (KGS)','Measurement'],[[e(D.containerNo)+' / '+e(D.seal)+'<br>'+e(D.marks),`${k(D.pkgs)} ${e(D.pack)} OF<br>${goodsLine()}<br>${e(D.freight)} – SHIPPED ON BOARD`,k(D.gross),m(D.cbm)+' CBM']])}
 <p>Number of original B/Ls: <b>${e(D.originals)}</b>. Shipped on board in apparent good order and condition, to be delivered at the port of discharge subject to the terms of this bill of lading.</p>${sig('FOR THE CARRIER (AS AGENT)','')}`],
 co:['Certificate of Origin',()=>`<h2>Certificate of Origin</h2><div class="sub">${e(D.coForm)} &nbsp;|&nbsp; Reference No.: <b>${e(D.coNo)}</b></div>
 <div class="g2">${bx('1. Exporter',e(D.exporter))}${bx('2. Consignee',e(D.importer))}${bx('3. Means of transport',`BY SEA: ${e(D.vessel)} / ${e(D.voyage)}<br>From ${e(D.pol)}<br>To ${e(D.pod)}`)}${bx('4. Issuing authority',e(D.authority))}</div>
 ${tbl(['Marks &amp; Nos.','Description of goods','HS code','Origin criterion','Quantity','Invoice No. / Date'],[[e(D.marks),e(D.goods),e(D.hs),e(D.criterion),k(D.net)+' KGS<br>'+k(D.pkgs)+' '+e(D.pack),e(D.invNo)+'<br>'+f(D.etd)]])}
-<p><b>Declaration by the exporter:</b> ${e(D.coDecl)}</p>
-<p style="margin-top:6px"><b>Certification:</b> ${e(D.coCert)}</p>${sig('EXPORTER','ISSUING AUTHORITY')}`],
+<p><b>Declaration by the exporter:</b> The undersigned hereby declares that the above details and statements are correct, that all goods were produced in <b>${e(D.origin)}</b> and comply with the origin requirements.</p>
+<p style="margin-top:6px"><b>Certification:</b> It is hereby certified, on the basis of control carried out, that the declaration by the exporter is correct.</p>${sig('EXPORTER','ISSUING AUTHORITY')}`],
 ins:['Insurance Certificate',()=>`<h2>Insurance Certificate</h2><div class="sub">Policy No.: <b>${e(D.policyNo)}</b> &nbsp;|&nbsp; Insurer: ${e(D.insurer)}</div>
 <div class="g2">${bx('Assured',e(D.exporter))}${bx('Claim payable to',e(D.importer)+'<br>(in USD, at '+e(D.pod.split(',')[0])+')')}${bx('Voyage',`From ${e(D.pol)}<br>To ${e(D.pod)}`)}${bx('Vessel / Voyage / B/L',e(D.vessel)+' / '+e(D.voyage)+' / '+e(D.blNo))}</div>
 ${tbl(['Marks &amp; Nos.','Subject matter insured','Sum insured (110% CIF)'],[[e(D.marks),`${k(D.pkgs)} ${e(D.pack)} OF<br>${goodsLine()}<br>Invoice ${e(D.invNo)}: USD ${m(total())}`,'<b>USD '+m(ins())+'</b><br>'+words(ins())]])}
 <p><b>Conditions of cover:</b><br>${e(D.cover)}</p><p style="margin-top:6px"><b>Claim settling agent:</b><br>${e(D.claim)}</p>
-<p style="margin-top:6px">${e(D.insClause)}</p>${sig('THE INSURER','')}`]};
+<p style="margin-top:6px">In the event of loss or damage which may result in a claim, immediate notice must be given to the settling agent. Issued in ${e(D.originals.split(' ')[0])} original(s), one of which being accomplished the others to stand void.</p>${sig('THE INSURER','')}`]};
 let cur='contract',tm;
 const wrapDoc=k=>`<div class="doc"><div class="stu">[ SINH VIÊN: ${e(D.sname||'..........')} - MSSV: ${e(D.mssv||'..........')} ]</div>${DOCS[k][1]()}</div>`;
 const show=()=>{document.getElementById('doc').innerHTML=wrapDoc(cur);document.querySelectorAll('#tabs .btn[data-k]').forEach(b=>b.classList.toggle('on',b.dataset.k===cur));const c=document.getElementById('calc');if(c)c.innerHTML=`Tổng trị giá: <b>USD ${m(total())}</b><br>Giá trị bảo hiểm (110%): <b>USD ${m(ins())}</b>`};
 document.getElementById('form').innerHTML=G.map((g,i)=>`<details ${i<2?'open':''}><summary>${g[0]}</summary><div class="grp">${g[1].map(([key,lb,ty,w,op])=>key=='_calc'?'<div class="calc" id="calc"></div>':`<div class="f ${w=='w'?'w':''}"><label>${lb}</label>${ty=='t'?`<textarea data-k="${key}" rows="3">${ee(D[key]).replace(/<br>/g,'\n')}</textarea>`:ty=='s'?`<select data-k="${key}"><option value="">-- Chọn --</option>${op.map(o=>`<option ${D[key]==o?'selected':''}>${o}</option>`).join('')}</select>`:`<input data-k="${key}" type="${ty||'text'}" value="${ee(D[key])}">`}</div>`).join('')}</div></details>`).join('');
 document.getElementById('form').addEventListener('input',x=>{const t=x.target;D[t.dataset.k]=t.type=='number'?+t.value:t.value;clearTimeout(tm);tm=setTimeout(show,120)});
 document.getElementById('tabs').innerHTML=Object.entries(DOCS).map(([k,v])=>`<button class="btn" data-k="${k}" onclick="cur='${k}';show()">${v[0]}</button>`).join('');
-const fname=k=>`${(D.mssv||'MSSV')}_${DOCS[k][0].replace(/\s+/g,'_')}.pdf`;
-async function makePdf(k){
-const host=document.createElement('div');host.style.cssText='position:absolute;left:0;top:0;width:703px;z-index:-9999;background:#fff';
-host.innerHTML=wrapDoc(k);const el=host.firstChild;el.style.cssText='width:703px;padding:0;margin:0;box-shadow:none;background:#fff';document.body.appendChild(host);
-try{const W=703,PH=Math.floor(271/186*W),H=el.offsetHeight,t0=el.getBoundingClientRect().top;
-const cand=[...el.querySelectorAll('.stu,h2,.sub,.g2,.art,tr,p,.sig,ul,li')].map(x=>x.getBoundingClientRect().bottom-t0).sort((a,b)=>a-b);
-const cv=await html2canvas(el,{scale:2,backgroundColor:'#fff',useCORS:true,scrollX:0,scrollY:0,windowWidth:1200,windowHeight:H+200});
-const {jsPDF}=window.jspdf,pdf=new jsPDF({unit:'mm',format:'a4'}),sc=cv.width/W;let pos=0,n=0;
-while(pos<H-1){let end=pos+PH;if(H<=end)end=H;else{const c=cand.filter(b=>b>pos+40&&b<=end);if(c.length)end=c[c.length-1]}
-const sl=document.createElement('canvas');sl.width=cv.width;sl.height=Math.max(1,Math.round((end-pos)*sc));const g=sl.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,sl.width,sl.height);
-g.drawImage(cv,0,Math.round(pos*sc),cv.width,sl.height,0,0,cv.width,sl.height);if(n)pdf.addPage();n++;
-pdf.addImage(sl.toDataURL('image/jpeg',.95),'JPEG',12,12,186,(end-pos)*186/W);pos=end}
-pdf.setFontSize(8);pdf.setTextColor(110);for(let i=1;i<=n;i++){pdf.setPage(i);pdf.text(`Page ${i}/${n}`,105,291,{align:'center'})}
-pdf.save(fname(k))}finally{host.remove()}}
-const pdfOne=()=>makePdf(cur).catch(x=>alert('Lỗi xuất PDF: '+x.message));
-async function pdfAll(){if((!D.sname||!D.mssv)&&!confirm('Chưa nhập Họ tên / MSSV. Vẫn xuất?'))return;const b=$('allBtn'),t=b.textContent;
-try{for(const [i,k] of Object.keys(DOCS).entries()){b.textContent=`Đang xuất ${i+1}/7...`;await makePdf(k);await new Promise(r=>setTimeout(r,700))}}catch(x){alert('Lỗi xuất PDF: '+x.message)}b.textContent=t}
+const opt=k=>({margin:8,filename:`${(D.mssv||'MSSV')}_${DOCS[k][0].replace(/\s+/g,'_')}.pdf`,image:{type:'jpeg',quality:.95},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4'},pagebreak:{mode:['css','legacy']}});
+function mk(k){const d=document.createElement('div');d.innerHTML=wrapDoc(k);const el=d.firstChild;el.style.boxShadow='none';return el}
+const pdfOne=()=>html2pdf().set(opt(cur)).from(mk(cur)).save();
+async function pdfAll(){if((!D.sname||!D.mssv)&&!confirm('Chưa nhập Họ tên / MSSV. Vẫn xuất?'))return;const b=document.getElementById('allBtn'),t=b.textContent;
+for(const [i,k] of Object.keys(DOCS).entries()){b.textContent=`Đang xuất ${i+1}/7...`;await html2pdf().set(opt(k)).from(mk(k)).save();await new Promise(r=>setTimeout(r,700))}b.textContent=t}
 show();
 
 const $=i=>document.getElementById(i);
@@ -181,7 +220,7 @@ function openSample(){openM('Bộ chứng từ mẫu (dữ liệu minh họa)',O
 $('mact').innerHTML='<button class="btn red" onclick="useSample()">Dùng mẫu này để chỉnh sửa</button>';sampleTab('contract')}
 function useSample(){if(!confirm('Nạp dữ liệu mẫu vào form (giữ lại Họ tên và MSSV)?'))return;Object.assign(D,SAMPLE,{sname:D.sname,mssv:D.mssv});fillForm();show();closeM()}
 const L=a=>'<ul>'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
-const GUIDE={all:['Tổng quan',`<h3>Cách dùng phần mềm</h3>`+L(['<b>Tạo mới chứng từ:</b> xóa dữ liệu, nhập lô hàng của riêng bạn.','<b>Chứng từ mẫu:</b> xem bộ chứng từ hoàn chỉnh để đối chiếu; có thể nạp vào form để sửa.','Nhập Họ tên và MSSV ở nhóm đầu tiên, rồi điền lần lượt các nhóm 1 → 5. Bản xem trước cập nhật ngay.','Các nhóm <b>6 và 7</b> cho phép sửa tự do toàn bộ điều khoản của hợp đồng và ghi chú các chứng từ để phù hợp nghiệp vụ thực tế.','Bấm <b>Xuất PDF</b> cho từng chứng từ, hoặc <b>Tải trọn bộ</b> để nhận 7 file riêng.'])+`<h3>Thứ tự lập chứng từ trong thực tế</h3>`+L(['Hợp đồng ngoại thương → Booking Note (đặt chỗ) → Commercial Invoice → Packing List → Bill of Lading → C/O → Insurance Certificate.'])+`<div class="tip"><b>Nguyên tắc vàng:</b> các chứng từ phải <b>nhất quán</b> về tên các bên, mô tả hàng, số lượng, trọng lượng, cảng, tên tàu. Chỉ cần lệch một chi tiết, ngân hàng có thể từ chối thanh toán theo L/C. Phần mềm tự điền cùng dữ liệu vào mọi chứng từ để bạn không bị lệch.</div>`],
+const GUIDE={all:['Tổng quan',`<h3>Cách dùng phần mềm</h3>`+L(['<b>Tạo mới chứng từ:</b> xóa dữ liệu, nhập lô hàng của riêng bạn.','<b>Chứng từ mẫu:</b> xem bộ chứng từ hoàn chỉnh để đối chiếu; có thể nạp vào form để sửa.','Nhập Họ tên và MSSV ở nhóm đầu tiên, rồi điền lần lượt các nhóm 1 → 5. Bản xem trước cập nhật ngay.','Bấm <b>Xuất PDF</b> cho từng chứng từ, hoặc <b>Tải trọn bộ</b> để nhận 7 file riêng.'])+`<h3>Thứ tự lập chứng từ trong thực tế</h3>`+L(['Hợp đồng ngoại thương → Booking Note (đặt chỗ) → Commercial Invoice → Packing List → Bill of Lading → C/O → Insurance Certificate.'])+`<div class="tip"><b>Nguyên tắc vàng:</b> các chứng từ phải <b>nhất quán</b> về tên các bên, mô tả hàng, số lượng, trọng lượng, cảng, tên tàu. Chỉ cần lệch một chi tiết, ngân hàng có thể từ chối thanh toán theo L/C. Phần mềm tự điền cùng dữ liệu vào mọi chứng từ để bạn không bị lệch.</div>`],
 contract:['Hợp đồng',`<h3>Mục đích</h3><p>Văn bản thỏa thuận giữa người bán và người mua, là cơ sở pháp lý của cả lô hàng.</p><h3>Cần nhập</h3>`+L(['Số hợp đồng, ngày và nơi ký.','Hai bên: tên đầy đủ, địa chỉ, điện thoại.','Hàng hóa: tên, quy cách, mã HS, số lượng, đơn giá, tổng trị giá.','Incoterms, cảng đi/đến, thời hạn giao hàng, điều khoản thanh toán.'])+`<h3>Lưu ý</h3>`+L(['Điều kiện Incoterms quyết định ai trả cước và bảo hiểm (CIF: người bán trả).','Tổng trị giá = số lượng (MT) × đơn giá; phần mềm tự tính và viết bằng chữ.','Điều khoản thanh toán (L/C, T/T...) phải khớp với Invoice và hồ sơ ngân hàng.'])],
 invoice:['Commercial Invoice',`<h3>Mục đích</h3><p>Hóa đơn thương mại: yêu cầu thanh toán của người bán, dùng để khai hải quan và thanh toán.</p><h3>Cần nhập</h3>`+L(['Số hóa đơn, ngày lập.','Số hợp đồng và số L/C (nếu thanh toán bằng L/C).','Đơn giá, số lượng; thông tin ngân hàng người thụ hưởng.'])+`<h3>Lưu ý</h3>`+L(['Mô tả hàng phải giống hệt L/C và hợp đồng.','Số tiền bằng chữ phải khớp số tiền bằng số.','Ngày hóa đơn không được sau ngày giao hàng trên B/L.'])],
 packing:['Packing List',`<h3>Mục đích</h3><p>Bảng kê chi tiết đóng gói, giúp hải quan và người mua kiểm tra hàng.</p><h3>Cần nhập</h3>`+L(['Số kiện, loại bao bì, KG tịnh mỗi kiện.','Net (tịnh), Gross (cả bì), thể tích CBM.','Số container, số seal, shipping marks.'])+`<h3>Lưu ý</h3>`+L(['Gross luôn lớn hơn Net.','Tổng số kiện × KG/kiện nên bằng Net weight.','Net, Gross phải khớp Invoice và B/L.'])],
@@ -192,4 +231,33 @@ ins:['Bảo hiểm',`<h3>Mục đích</h3><p>Chứng thư bảo hiểm hàng hó
 function guideTab(x){mOn(x);$('mbody').style.background='#fff';$('mbody').innerHTML=`<div class="gd"><h2 style="color:#01579b">${GUIDE[x][0]==='Tổng quan'?'Hướng dẫn tổng quan':'Hướng dẫn: '+(DOCS[x]?DOCS[x][0]:'')}</h2>${GUIDE[x][1]}</div>`;$('mbody').scrollTop=0}
 function openGuide(){openM('Hướng dẫn nội dung chứng từ',Object.entries(GUIDE).map(([x,v])=>[x,v[0]]),'guideTab');$('mact').innerHTML='';guideTab('all')}
 document.addEventListener('keydown',x=>{if(x.key=='Escape')closeM()});$('modal').addEventListener('click',x=>{if(x.target.id=='modal')closeM()});
+
+/* ===== Trang giới thiệu ===== */
+(function(){
+const ic=(l,c)=>`<svg viewBox="0 0 48 60" aria-hidden="true"><path d="M4 2h28l12 12v44H4z" fill="#fff" stroke="${c}" stroke-width="3" stroke-linejoin="round"/><path d="M32 2v12h12" fill="${c}" opacity=".3"/><rect x="10" y="20" width="22" height="3" fill="${c}"/><rect x="10" y="27" width="28" height="3" fill="${c}" opacity=".5"/><text x="24" y="50" text-anchor="middle" font-size="11" font-weight="800" fill="${c}" style="font-family:Arial,sans-serif">${l}</text></svg>`;
+const L=[['Hợp đồng','HĐ','Sales Contract','Thỏa thuận mua bán giữa hai bên, là căn cứ pháp lý của cả lô hàng.','#0d2b45'],['Hóa đơn thương mại','INV','Commercial Invoice','Yêu cầu thanh toán của người bán, dùng để khai hải quan.','#e4572e'],['Phiếu đóng gói','P/L','Packing List','Bảng kê số kiện, trọng lượng Net, Gross và thể tích CBM.','#2a9d8f'],['Đặt chỗ tàu','BKG','Booking Note','Giữ chỗ với hãng tàu, kèm hạn SI và CY cut-off.','#0f6e8c'],['Vận đơn đường biển','B/L','Bill of Lading','Biên lai nhận hàng và chứng từ sở hữu hàng hóa.','#0d2b45'],['Giấy chứng nhận xuất xứ','C/O','Certificate of Origin','Chứng minh nguồn gốc hàng để người mua hưởng ưu đãi thuế.','#e4572e'],['Chứng thư bảo hiểm','BH','Insurance Certificate','Bảo hiểm hàng hóa với số tiền bằng 110% giá trị CIF.','#2a9d8f']];
+document.getElementById('in-list').innerHTML=L.map(x=>`<div class="in-d">${ic(x[1],x[4])}<div><b>${x[0]}</b><i>${x[2]}</i><p>${x[3]}</p></div></div>`).join('');
+const C=['#e4572e','#ffcf4a','#2a9d8f','#f2f7fa','#4a7fb0','#e4572e'],T=['B/L','C/O','INV','P/L','BKG','BH'];
+let s='<svg viewBox="0 0 640 430" role="img" aria-label="Tàu container chở hàng xuất khẩu cùng các chứng từ"><rect width="640" height="430" rx="18" fill="#17415f"/><circle cx="545" cy="80" r="34" fill="#ffcf4a"/>';
+s+='<g class="bob"><g transform="translate(34 36) rotate(-7)"><rect width="120" height="150" fill="#fff" rx="4"/><rect x="12" y="16" width="64" height="9" fill="#0d2b45"/>'+[40,56,72,88,104].map(y=>`<rect x="12" y="${y}" width="${y%32?96:80}" height="5" fill="#b0bec5"/>`).join('')+'<text x="12" y="138" font-size="11" font-weight="800" fill="#e4572e">INVOICE</text></g>';
+s+='<g transform="translate(176 14) rotate(5)"><rect width="104" height="128" fill="#fff" rx="4"/><rect x="10" y="14" width="50" height="8" fill="#2a9d8f"/>'+[34,48,62,76].map(y=>`<rect x="10" y="${y}" width="84" height="5" fill="#b0bec5"/>`).join('')+'<circle cx="70" cy="104" r="17" fill="none" stroke="#d62839" stroke-width="3"/><text x="70" y="108" text-anchor="middle" font-size="10" font-weight="800" fill="#d62839">OK</text></g></g>';
+s+='<path d="M0 318q40-14 80 0t80 0 80 0 80 0 80 0 80 0 80 0 80 0V430H0z" fill="#0f6e8c"/>';
+s+='<polygon points="70,300 580,300 540,366 112,366" fill="#f2f7fa"/><polygon points="76,314 574,314 565,328 85,328" fill="#b8322a"/><polygon points="112,366 540,366 548,352 104,352" fill="#0d2b45" opacity=".25"/>';
+[[0,6,262],[1,5,214],[2,4,166]].forEach(([r,n,y])=>{for(let i=0;i<n;i++){const x=100+r*30+i*62,k=(i+r*2)%6;s+=`<rect x="${x}" y="${y}" width="60" height="46" rx="2" fill="${C[k]}" stroke="#0d2b45" stroke-width="1.5"/>`+[10,22,34,46].map(d=>`<line x1="${x+d}" y1="${y+4}" x2="${x+d}" y2="${y+42}" stroke="#0d2b45" stroke-opacity=".25"/>`).join('')+((i+r)%2?`<text x="${x+30}" y="${y+28}" text-anchor="middle" font-size="12" font-weight="800" fill="${k==1||k==3?'#0d2b45':'#fff'}" style="font-family:Arial,sans-serif">${T[(i+r*3)%6]}</text>`:'')}});
+s+='<rect x="500" y="188" width="56" height="112" fill="#f2f7fa" stroke="#0d2b45" stroke-width="1.5"/><rect x="494" y="176" width="68" height="14" fill="#0d2b45"/>'+[200,226,252].map(y=>`<rect x="508" y="${y}" width="40" height="12" fill="#17415f"/>`).join('')+'<rect x="522" y="150" width="8" height="26" fill="#0d2b45"/>';
+s+='<path d="M0 346q40-14 80 0t80 0 80 0 80 0 80 0 80 0 80 0 80 0V430H0z" fill="#0b5a75" opacity=".9"/><path d="M0 392q40-12 80 0t80 0 80 0 80 0 80 0 80 0 80 0 80 0V430H0z" fill="#0a4a62"/></svg>';
+document.getElementById('in-art').innerHTML=s;
+document.getElementById('in-ui').innerHTML=`<svg viewBox="0 0 520 330" role="img" aria-label="Minh họa: nhập ở khung trái, chứng từ cập nhật ở khung phải"><rect x="2" y="2" width="516" height="326" rx="10" fill="#fff" stroke="#0d2b45" stroke-width="3"/><rect x="2" y="2" width="516" height="34" rx="9" fill="#fff9e6"/><rect x="14" y="10" width="86" height="18" rx="4" fill="#b3e5fc"/><rect x="108" y="10" width="86" height="18" rx="4" fill="#b3e5fc"/><rect x="398" y="10" width="108" height="18" rx="4" fill="#ff0033"/>
+<rect x="14" y="48" width="180" height="270" fill="#f2f7fa"/><rect x="22" y="56" width="164" height="22" rx="4" fill="#e8f4f8"/><rect x="22" y="84" width="164" height="22" rx="4" fill="#e8f4f8"/><rect x="22" y="112" width="164" height="70" rx="4" fill="#fff" stroke="#b3e5fc"/><rect x="30" y="122" width="70" height="6" fill="#b0bec5"/><rect x="30" y="132" width="148" height="16" rx="3" fill="#fffdf5" stroke="#b0bec5"/><rect x="30" y="152" width="70" height="6" fill="#b0bec5"/><rect x="30" y="162" width="148" height="14" rx="3" fill="#fffdf5" stroke="#e4572e" stroke-width="2"/><rect x="34" y="167" width="80" height="4" fill="#0d2b45"/>
+<rect x="22" y="188" width="164" height="22" rx="4" fill="#e8f4f8"/><rect x="22" y="216" width="164" height="22" rx="4" fill="#e8f4f8"/><rect x="22" y="244" width="164" height="22" rx="4" fill="#e8f4f8"/>
+<rect x="206" y="48" width="302" height="26" fill="#fff9e6"/>${[0,1,2,3,4].map(i=>`<rect x="212" y="${54+0}" width="0" height="0"/><rect x="${212+i*58}" y="53" width="52" height="16" rx="4" fill="${i==1?'#0288d1':'#b3e5fc'}"/>`).join('')}
+<rect x="206" y="74" width="302" height="244" fill="#cfd8dc"/><rect x="238" y="84" width="238" height="228" fill="#fff"/><rect x="290" y="96" width="134" height="10" fill="#0d2b45"/><text x="357" y="127" text-anchor="middle" font-size="9" fill="#0d2b45" style="font-family:Arial,sans-serif">Invoice No.: INV-2026-0801</text><rect x="318" y="118" width="78" height="14" fill="none"/>
+<rect x="250" y="142" width="214" height="52" fill="none" stroke="#0d2b45"/><rect x="258" y="152" width="90" height="5" fill="#b0bec5"/><rect x="258" y="164" width="120" height="5" fill="#b0bec5"/><rect x="258" y="176" width="80" height="5" fill="#b0bec5"/>
+<rect x="250" y="204" width="214" height="60" fill="none" stroke="#0d2b45"/><rect x="258" y="214" width="150" height="5" fill="#b0bec5"/><rect x="258" y="226" width="110" height="5" fill="#b0bec5"/><rect x="258" y="238" width="170" height="5" fill="#b0bec5"/>
+<path d="M186 169C214 169 214 126 246 122" fill="none" stroke="#e4572e" stroke-width="3" stroke-dasharray="6 5"/><rect x="246" y="113" width="22" height="12" fill="#e4572e" opacity=".85"/>
+<text x="102" y="304" text-anchor="middle" font-size="12" font-weight="700" fill="#0d2b45" style="font-family:Arial,sans-serif">Nhập liệu</text><text x="357" y="304" text-anchor="middle" font-size="12" font-weight="700" fill="#0d2b45" style="font-family:Arial,sans-serif">Xem trước, tự cập nhật</text></svg>`;
+})();
+const introEl=document.getElementById('intro');
+function goApp(m){introEl.style.display='none';if(m=='sample')openSample();else if(m=='new')newDocs();else{const f=document.querySelector('[data-k=sname]');f&&f.focus()}}
+function showIntro(){introEl.style.display='block';introEl.scrollTop=0}
 </script></body></html>
